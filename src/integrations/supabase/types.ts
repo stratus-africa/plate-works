@@ -86,6 +86,248 @@ export type Database = {
         }
         Relationships: []
       }
+      cycle_count_lines: {
+        Row: {
+          counted: boolean
+          counted_status: string | null
+          counted_warehouse_id: string | null
+          created_at: string
+          cycle_count_id: string
+          discrepancy: boolean
+          discrepancy_type: string | null
+          expected_status: string | null
+          expected_warehouse_id: string | null
+          id: string
+          item_code: string
+          item_type: string
+          notes: string | null
+          offcut_id: string | null
+          plate_id: string | null
+          resolved: boolean
+          updated_at: string
+        }
+        Insert: {
+          counted?: boolean
+          counted_status?: string | null
+          counted_warehouse_id?: string | null
+          created_at?: string
+          cycle_count_id: string
+          discrepancy?: boolean
+          discrepancy_type?: string | null
+          expected_status?: string | null
+          expected_warehouse_id?: string | null
+          id?: string
+          item_code?: string
+          item_type?: string
+          notes?: string | null
+          offcut_id?: string | null
+          plate_id?: string | null
+          resolved?: boolean
+          updated_at?: string
+        }
+        Update: {
+          counted?: boolean
+          counted_status?: string | null
+          counted_warehouse_id?: string | null
+          created_at?: string
+          cycle_count_id?: string
+          discrepancy?: boolean
+          discrepancy_type?: string | null
+          expected_status?: string | null
+          expected_warehouse_id?: string | null
+          id?: string
+          item_code?: string
+          item_type?: string
+          notes?: string | null
+          offcut_id?: string | null
+          plate_id?: string | null
+          resolved?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cycle_count_lines_counted_warehouse_id_fkey"
+            columns: ["counted_warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cycle_count_lines_cycle_count_id_fkey"
+            columns: ["cycle_count_id"]
+            isOneToOne: false
+            referencedRelation: "cycle_counts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cycle_count_lines_expected_warehouse_id_fkey"
+            columns: ["expected_warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cycle_count_lines_offcut_id_fkey"
+            columns: ["offcut_id"]
+            isOneToOne: false
+            referencedRelation: "offcuts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cycle_count_lines_plate_id_fkey"
+            columns: ["plate_id"]
+            isOneToOne: false
+            referencedRelation: "plates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cycle_counts: {
+        Row: {
+          completed_at: string | null
+          counted_by: string | null
+          counted_count: number
+          created_at: string
+          discrepancy_count: number
+          expected_count: number
+          id: string
+          notes: string | null
+          reference: string
+          scope: string
+          started_at: string
+          status: Database["public"]["Enums"]["cycle_count_status"]
+          updated_at: string
+          warehouse_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          counted_by?: string | null
+          counted_count?: number
+          created_at?: string
+          discrepancy_count?: number
+          expected_count?: number
+          id?: string
+          notes?: string | null
+          reference?: string
+          scope?: string
+          started_at?: string
+          status?: Database["public"]["Enums"]["cycle_count_status"]
+          updated_at?: string
+          warehouse_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          counted_by?: string | null
+          counted_count?: number
+          created_at?: string
+          discrepancy_count?: number
+          expected_count?: number
+          id?: string
+          notes?: string | null
+          reference?: string
+          scope?: string
+          started_at?: string
+          status?: Database["public"]["Enums"]["cycle_count_status"]
+          updated_at?: string
+          warehouse_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cycle_counts_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_adjustments: {
+        Row: {
+          adjustment_type: string
+          created_at: string
+          cycle_count_id: string | null
+          id: string
+          item_code: string
+          item_type: string
+          new_status: string | null
+          new_warehouse_id: string | null
+          offcut_id: string | null
+          old_status: string | null
+          old_warehouse_id: string | null
+          performed_by: string | null
+          plate_id: string | null
+          reason: string | null
+        }
+        Insert: {
+          adjustment_type?: string
+          created_at?: string
+          cycle_count_id?: string | null
+          id?: string
+          item_code?: string
+          item_type?: string
+          new_status?: string | null
+          new_warehouse_id?: string | null
+          offcut_id?: string | null
+          old_status?: string | null
+          old_warehouse_id?: string | null
+          performed_by?: string | null
+          plate_id?: string | null
+          reason?: string | null
+        }
+        Update: {
+          adjustment_type?: string
+          created_at?: string
+          cycle_count_id?: string | null
+          id?: string
+          item_code?: string
+          item_type?: string
+          new_status?: string | null
+          new_warehouse_id?: string | null
+          offcut_id?: string | null
+          old_status?: string | null
+          old_warehouse_id?: string | null
+          performed_by?: string | null
+          plate_id?: string | null
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_adjustments_cycle_count_id_fkey"
+            columns: ["cycle_count_id"]
+            isOneToOne: false
+            referencedRelation: "cycle_counts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_adjustments_new_warehouse_id_fkey"
+            columns: ["new_warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_adjustments_offcut_id_fkey"
+            columns: ["offcut_id"]
+            isOneToOne: false
+            referencedRelation: "offcuts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_adjustments_old_warehouse_id_fkey"
+            columns: ["old_warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_adjustments_plate_id_fkey"
+            columns: ["plate_id"]
+            isOneToOne: false
+            referencedRelation: "plates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inventory_transactions: {
         Row: {
           batch_id: string | null
@@ -651,6 +893,74 @@ export type Database = {
         }
         Relationships: []
       }
+      stock_transfers: {
+        Row: {
+          created_at: string
+          from_warehouse_id: string | null
+          id: string
+          item_code: string
+          item_type: string
+          offcut_id: string | null
+          performed_by: string | null
+          plate_id: string | null
+          reason: string | null
+          to_warehouse_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          from_warehouse_id?: string | null
+          id?: string
+          item_code?: string
+          item_type?: string
+          offcut_id?: string | null
+          performed_by?: string | null
+          plate_id?: string | null
+          reason?: string | null
+          to_warehouse_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          from_warehouse_id?: string | null
+          id?: string
+          item_code?: string
+          item_type?: string
+          offcut_id?: string | null
+          performed_by?: string | null
+          plate_id?: string | null
+          reason?: string | null
+          to_warehouse_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_transfers_from_warehouse_id_fkey"
+            columns: ["from_warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_transfers_offcut_id_fkey"
+            columns: ["offcut_id"]
+            isOneToOne: false
+            referencedRelation: "offcuts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_transfers_plate_id_fkey"
+            columns: ["plate_id"]
+            isOneToOne: false
+            referencedRelation: "plates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_transfers_to_warehouse_id_fkey"
+            columns: ["to_warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppliers: {
         Row: {
           address: string | null
@@ -748,6 +1058,7 @@ export type Database = {
         | "store_keeper"
         | "management"
       batch_status: "active" | "depleted" | "quarantined"
+      cycle_count_status: "draft" | "in_progress" | "completed" | "cancelled"
       job_status:
         | "draft"
         | "pending"
@@ -896,6 +1207,7 @@ export const Constants = {
         "management",
       ],
       batch_status: ["active", "depleted", "quarantined"],
+      cycle_count_status: ["draft", "in_progress", "completed", "cancelled"],
       job_status: [
         "draft",
         "pending",
