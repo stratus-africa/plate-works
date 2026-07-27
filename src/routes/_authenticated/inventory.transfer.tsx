@@ -95,18 +95,23 @@ function TransferPage() {
       if (rec.warehouse_id === toWarehouse) throw new Error("Item is already in that warehouse");
 
       const table = item.kind === "plate" ? "plates" : "offcuts";
-      await supabase.from(table).update({ warehouse_id: toWarehouse }).eq("id", rec.id);
+      if (item.kind === "plate") {
+        await supabase.from("plates").update({ warehouse_id: toWarehouse }).eq("id", rec.id);
+      } else {
+        await supabase.from("offcuts").update({ warehouse_id: toWarehouse }).eq("id", rec.id);
+      }
 
       await supabase.from("stock_transfers").insert({
         plate_id: item.kind === "plate" ? rec.id : null,
         offcut_id: item.kind === "offcut" ? rec.id : null,
         item_type: item.kind,
+        item_code: item.code,
         from_warehouse_id: rec.warehouse_id,
         to_warehouse_id: toWarehouse,
-        quantity: 1,
-        notes: notes || null,
+        reason: notes || null,
         performed_by: await currentUserId(),
       });
+
 
       await logTransaction({
         transaction_type: "transfer",
