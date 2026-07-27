@@ -99,7 +99,12 @@ function NewJob() {
   );
 
   const suitableOffcut = useMemo(
-    () => findBestOffcut(offcuts ?? [], effWidth, effHeight),
+    () =>
+      findBestOffcut(
+        (offcuts ?? []).map((o) => ({ ...o, area: Number(o.area ?? 0) })),
+        effWidth,
+        effHeight,
+      ),
     [offcuts, effWidth, effHeight],
   );
 

@@ -17,6 +17,7 @@ import { Route as AuthenticatedOffcutsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedJobsIndexRouteImport } from './routes/_authenticated/jobs.index'
 import { Route as AuthenticatedInventoryIndexRouteImport } from './routes/_authenticated/inventory.index'
+import { Route as AuthenticatedJobsNewRouteImport } from './routes/_authenticated/jobs.new'
 import { Route as AuthenticatedInventoryReceiveRouteImport } from './routes/_authenticated/inventory.receive'
 
 const AuthRoute = AuthRouteImport.update({
@@ -59,6 +60,11 @@ const AuthenticatedInventoryIndexRoute =
     path: '/inventory/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedJobsNewRoute = AuthenticatedJobsNewRouteImport.update({
+  id: '/jobs/new',
+  path: '/jobs/new',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedInventoryReceiveRoute =
   AuthenticatedInventoryReceiveRouteImport.update({
     id: '/inventory/receive',
@@ -73,6 +79,7 @@ export interface FileRoutesByFullPath {
   '/offcuts': typeof AuthenticatedOffcutsRoute
   '/plates': typeof AuthenticatedPlatesRoute
   '/inventory/receive': typeof AuthenticatedInventoryReceiveRoute
+  '/jobs/new': typeof AuthenticatedJobsNewRoute
   '/inventory/': typeof AuthenticatedInventoryIndexRoute
   '/jobs/': typeof AuthenticatedJobsIndexRoute
 }
@@ -83,6 +90,7 @@ export interface FileRoutesByTo {
   '/offcuts': typeof AuthenticatedOffcutsRoute
   '/plates': typeof AuthenticatedPlatesRoute
   '/inventory/receive': typeof AuthenticatedInventoryReceiveRoute
+  '/jobs/new': typeof AuthenticatedJobsNewRoute
   '/inventory': typeof AuthenticatedInventoryIndexRoute
   '/jobs': typeof AuthenticatedJobsIndexRoute
 }
@@ -95,6 +103,7 @@ export interface FileRoutesById {
   '/_authenticated/offcuts': typeof AuthenticatedOffcutsRoute
   '/_authenticated/plates': typeof AuthenticatedPlatesRoute
   '/_authenticated/inventory/receive': typeof AuthenticatedInventoryReceiveRoute
+  '/_authenticated/jobs/new': typeof AuthenticatedJobsNewRoute
   '/_authenticated/inventory/': typeof AuthenticatedInventoryIndexRoute
   '/_authenticated/jobs/': typeof AuthenticatedJobsIndexRoute
 }
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/offcuts'
     | '/plates'
     | '/inventory/receive'
+    | '/jobs/new'
     | '/inventory/'
     | '/jobs/'
   fileRoutesByTo: FileRoutesByTo
@@ -117,6 +127,7 @@ export interface FileRouteTypes {
     | '/offcuts'
     | '/plates'
     | '/inventory/receive'
+    | '/jobs/new'
     | '/inventory'
     | '/jobs'
   id:
@@ -128,6 +139,7 @@ export interface FileRouteTypes {
     | '/_authenticated/offcuts'
     | '/_authenticated/plates'
     | '/_authenticated/inventory/receive'
+    | '/_authenticated/jobs/new'
     | '/_authenticated/inventory/'
     | '/_authenticated/jobs/'
   fileRoutesById: FileRoutesById
@@ -196,6 +208,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInventoryIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/jobs/new': {
+      id: '/_authenticated/jobs/new'
+      path: '/jobs/new'
+      fullPath: '/jobs/new'
+      preLoaderRoute: typeof AuthenticatedJobsNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/inventory/receive': {
       id: '/_authenticated/inventory/receive'
       path: '/inventory/receive'
@@ -211,6 +230,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedOffcutsRoute: typeof AuthenticatedOffcutsRoute
   AuthenticatedPlatesRoute: typeof AuthenticatedPlatesRoute
   AuthenticatedInventoryReceiveRoute: typeof AuthenticatedInventoryReceiveRoute
+  AuthenticatedJobsNewRoute: typeof AuthenticatedJobsNewRoute
   AuthenticatedInventoryIndexRoute: typeof AuthenticatedInventoryIndexRoute
   AuthenticatedJobsIndexRoute: typeof AuthenticatedJobsIndexRoute
 }
@@ -220,6 +240,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOffcutsRoute: AuthenticatedOffcutsRoute,
   AuthenticatedPlatesRoute: AuthenticatedPlatesRoute,
   AuthenticatedInventoryReceiveRoute: AuthenticatedInventoryReceiveRoute,
+  AuthenticatedJobsNewRoute: AuthenticatedJobsNewRoute,
   AuthenticatedInventoryIndexRoute: AuthenticatedInventoryIndexRoute,
   AuthenticatedJobsIndexRoute: AuthenticatedJobsIndexRoute,
 }
