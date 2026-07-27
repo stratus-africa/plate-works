@@ -201,7 +201,7 @@ function ScanPage() {
 }
 
 function ResultCard({ result }: { result: ScanResult }) {
-  const r = result.record as Record<string, never> & {
+  const r = result.record as unknown as {
     status?: string;
     width?: number;
     height?: number;
