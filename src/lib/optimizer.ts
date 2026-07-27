@@ -54,7 +54,7 @@ export interface JobOptimization extends LayoutResult {
   fits: boolean;
 }
 
-function buildLayout(
+export function buildLayout(
   pieceW: number,
   pieceH: number,
   plateW: number,

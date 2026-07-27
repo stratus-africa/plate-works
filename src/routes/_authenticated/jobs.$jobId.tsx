@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/page-header";
 import { StatusBadge } from "@/components/status-badge";
 import { CuttingLayoutPreview } from "@/components/cutting-layout-preview";
+import { AiLayoutRecommendation } from "@/components/ai-layout-recommendation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -390,6 +391,15 @@ function JobDetail() {
             <Row label="Sales order" value={job.sales_order ?? "—"} />
           </CardContent>
         </Card>
+      </div>
+
+      <div className="mt-4">
+        <AiLayoutRecommendation
+          effectiveWidth={Number(job.effective_width)}
+          effectiveHeight={Number(job.effective_height)}
+          quantity={job.quantity}
+          product={job.product}
+        />
       </div>
 
       <Card className="mt-4">

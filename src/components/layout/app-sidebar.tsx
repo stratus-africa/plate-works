@@ -10,6 +10,8 @@ import {
   Settings,
   PackagePlus,
   Bell,
+  ScanLine,
+  ArrowRightLeft,
 } from "lucide-react";
 import {
   Sidebar,
@@ -36,7 +38,10 @@ const groups = [
       { title: "Receive Stock", url: "/inventory/receive", icon: PackagePlus },
       { title: "Plates", url: "/plates", icon: Layers },
       { title: "Offcuts", url: "/offcuts", icon: Scissors },
+      { title: "Scan & Consume", url: "/scan", icon: ScanLine },
+      { title: "Transfers", url: "/inventory/transfer", icon: ArrowRightLeft },
     ],
+
   },
   {
     label: "Production",
