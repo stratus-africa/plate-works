@@ -4,6 +4,52 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Zoho Puvi — corporate typeface used across the ERP. */
+@font-face {
+  font-family: "Zoho Puvi";
+  src: url("https://static.zohocdn.com/zohofonts/zohopuvi/4.0/Zoho_Puvi_Light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Zoho Puvi";
+  src: url("https://static.zohocdn.com/zohofonts/zohopuvi/4.0/Zoho_Puvi_Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Zoho Puvi";
+  src: url("https://static.zohocdn.com/zohofonts/zohopuvi/4.0/Zoho_Puvi_Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Zoho Puvi";
+  src: url("https://static.zohocdn.com/zohofonts/zohopuvi/4.0/Zoho_Puvi_Semibold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Zoho Puvi";
+  src: url("https://static.zohocdn.com/zohofonts/zohopuvi/4.0/Zoho_Puvi_Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Zoho Puvi";
+  src: url("https://static.zohocdn.com/zohofonts/zohopuvi/4.0/Zoho_Puvi_Extrabold.woff2") format("woff2");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
 /*
  * PlateWorks ERP design system.
  * Industrial ink-and-steel palette: deep slate navy surfaces, cyan-teal primary,
