@@ -25,6 +25,7 @@ import { Route as AuthenticatedJobsIndexRouteImport } from './routes/_authentica
 import { Route as AuthenticatedInventoryIndexRouteImport } from './routes/_authenticated/inventory.index'
 import { Route as AuthenticatedJobsNewRouteImport } from './routes/_authenticated/jobs.new'
 import { Route as AuthenticatedJobsJobIdRouteImport } from './routes/_authenticated/jobs.$jobId'
+import { Route as AuthenticatedInventoryTransferRouteImport } from './routes/_authenticated/inventory.transfer'
 import { Route as AuthenticatedInventoryReceiveRouteImport } from './routes/_authenticated/inventory.receive'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -108,6 +109,12 @@ const AuthenticatedJobsJobIdRoute = AuthenticatedJobsJobIdRouteImport.update({
   path: '/jobs/$jobId',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedInventoryTransferRoute =
+  AuthenticatedInventoryTransferRouteImport.update({
+    id: '/inventory/transfer',
+    path: '/inventory/transfer',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedInventoryReceiveRoute =
   AuthenticatedInventoryReceiveRouteImport.update({
     id: '/inventory/receive',
@@ -128,6 +135,7 @@ export interface FileRoutesByFullPath {
   '/scan': typeof AuthenticatedScanRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/inventory/receive': typeof AuthenticatedInventoryReceiveRoute
+  '/inventory/transfer': typeof AuthenticatedInventoryTransferRoute
   '/jobs/$jobId': typeof AuthenticatedJobsJobIdRoute
   '/jobs/new': typeof AuthenticatedJobsNewRoute
   '/inventory/': typeof AuthenticatedInventoryIndexRoute
@@ -146,6 +154,7 @@ export interface FileRoutesByTo {
   '/scan': typeof AuthenticatedScanRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/inventory/receive': typeof AuthenticatedInventoryReceiveRoute
+  '/inventory/transfer': typeof AuthenticatedInventoryTransferRoute
   '/jobs/$jobId': typeof AuthenticatedJobsJobIdRoute
   '/jobs/new': typeof AuthenticatedJobsNewRoute
   '/inventory': typeof AuthenticatedInventoryIndexRoute
@@ -166,6 +175,7 @@ export interface FileRoutesById {
   '/_authenticated/scan': typeof AuthenticatedScanRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/inventory/receive': typeof AuthenticatedInventoryReceiveRoute
+  '/_authenticated/inventory/transfer': typeof AuthenticatedInventoryTransferRoute
   '/_authenticated/jobs/$jobId': typeof AuthenticatedJobsJobIdRoute
   '/_authenticated/jobs/new': typeof AuthenticatedJobsNewRoute
   '/_authenticated/inventory/': typeof AuthenticatedInventoryIndexRoute
@@ -186,6 +196,7 @@ export interface FileRouteTypes {
     | '/scan'
     | '/settings'
     | '/inventory/receive'
+    | '/inventory/transfer'
     | '/jobs/$jobId'
     | '/jobs/new'
     | '/inventory/'
@@ -204,6 +215,7 @@ export interface FileRouteTypes {
     | '/scan'
     | '/settings'
     | '/inventory/receive'
+    | '/inventory/transfer'
     | '/jobs/$jobId'
     | '/jobs/new'
     | '/inventory'
@@ -223,6 +235,7 @@ export interface FileRouteTypes {
     | '/_authenticated/scan'
     | '/_authenticated/settings'
     | '/_authenticated/inventory/receive'
+    | '/_authenticated/inventory/transfer'
     | '/_authenticated/jobs/$jobId'
     | '/_authenticated/jobs/new'
     | '/_authenticated/inventory/'
@@ -350,6 +363,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedJobsJobIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/inventory/transfer': {
+      id: '/_authenticated/inventory/transfer'
+      path: '/inventory/transfer'
+      fullPath: '/inventory/transfer'
+      preLoaderRoute: typeof AuthenticatedInventoryTransferRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/inventory/receive': {
       id: '/_authenticated/inventory/receive'
       path: '/inventory/receive'
@@ -370,6 +390,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedScanRoute: typeof AuthenticatedScanRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedInventoryReceiveRoute: typeof AuthenticatedInventoryReceiveRoute
+  AuthenticatedInventoryTransferRoute: typeof AuthenticatedInventoryTransferRoute
   AuthenticatedJobsJobIdRoute: typeof AuthenticatedJobsJobIdRoute
   AuthenticatedJobsNewRoute: typeof AuthenticatedJobsNewRoute
   AuthenticatedInventoryIndexRoute: typeof AuthenticatedInventoryIndexRoute
@@ -386,6 +407,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedScanRoute: AuthenticatedScanRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedInventoryReceiveRoute: AuthenticatedInventoryReceiveRoute,
+  AuthenticatedInventoryTransferRoute: AuthenticatedInventoryTransferRoute,
   AuthenticatedJobsJobIdRoute: AuthenticatedJobsJobIdRoute,
   AuthenticatedJobsNewRoute: AuthenticatedJobsNewRoute,
   AuthenticatedInventoryIndexRoute: AuthenticatedInventoryIndexRoute,
