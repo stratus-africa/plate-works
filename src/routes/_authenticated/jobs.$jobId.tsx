@@ -392,6 +392,15 @@ function JobDetail() {
         </Card>
       </div>
 
+      <div className="mt-4">
+        <AiLayoutRecommendation
+          effectiveWidth={Number(job.effective_width)}
+          effectiveHeight={Number(job.effective_height)}
+          quantity={job.quantity}
+          product={job.product}
+        />
+      </div>
+
       <Card className="mt-4">
         <CardHeader>
           <CardTitle className="text-base">Allocations</CardTitle>
