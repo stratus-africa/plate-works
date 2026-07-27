@@ -44,6 +44,7 @@ export async function logTransaction(payload: {
   plate_id?: string | null;
   offcut_id?: string | null;
   job_id?: string | null;
+  warehouse_id?: string | null;
   notes?: string | null;
 }) {
   const { data: userData } = await supabase.auth.getUser();

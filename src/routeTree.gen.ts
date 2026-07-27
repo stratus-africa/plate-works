@@ -12,8 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedPlatesRouteImport } from './routes/_authenticated/plates'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedInventoryIndexRouteImport } from './routes/_authenticated/inventory.index'
+import { Route as AuthenticatedInventoryReceiveRouteImport } from './routes/_authenticated/inventory.receive'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -29,6 +31,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedPlatesRoute = AuthenticatedPlatesRouteImport.update({
+  id: '/plates',
+  path: '/plates',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -40,17 +47,27 @@ const AuthenticatedInventoryIndexRoute =
     path: '/inventory/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedInventoryReceiveRoute =
+  AuthenticatedInventoryReceiveRouteImport.update({
+    id: '/inventory/receive',
+    path: '/inventory/receive',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/plates': typeof AuthenticatedPlatesRoute
+  '/inventory/receive': typeof AuthenticatedInventoryReceiveRoute
   '/inventory/': typeof AuthenticatedInventoryIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/plates': typeof AuthenticatedPlatesRoute
+  '/inventory/receive': typeof AuthenticatedInventoryReceiveRoute
   '/inventory': typeof AuthenticatedInventoryIndexRoute
 }
 export interface FileRoutesById {
@@ -59,19 +76,35 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/plates': typeof AuthenticatedPlatesRoute
+  '/_authenticated/inventory/receive': typeof AuthenticatedInventoryReceiveRoute
   '/_authenticated/inventory/': typeof AuthenticatedInventoryIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/dashboard' | '/inventory/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/plates'
+    | '/inventory/receive'
+    | '/inventory/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/dashboard' | '/inventory'
+  to:
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/plates'
+    | '/inventory/receive'
+    | '/inventory'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/dashboard'
+    | '/_authenticated/plates'
+    | '/_authenticated/inventory/receive'
     | '/_authenticated/inventory/'
   fileRoutesById: FileRoutesById
 }
@@ -104,6 +137,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/plates': {
+      id: '/_authenticated/plates'
+      path: '/plates'
+      fullPath: '/plates'
+      preLoaderRoute: typeof AuthenticatedPlatesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -118,16 +158,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInventoryIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/inventory/receive': {
+      id: '/_authenticated/inventory/receive'
+      path: '/inventory/receive'
+      fullPath: '/inventory/receive'
+      preLoaderRoute: typeof AuthenticatedInventoryReceiveRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedPlatesRoute: typeof AuthenticatedPlatesRoute
+  AuthenticatedInventoryReceiveRoute: typeof AuthenticatedInventoryReceiveRoute
   AuthenticatedInventoryIndexRoute: typeof AuthenticatedInventoryIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedPlatesRoute: AuthenticatedPlatesRoute,
+  AuthenticatedInventoryReceiveRoute: AuthenticatedInventoryReceiveRoute,
   AuthenticatedInventoryIndexRoute: AuthenticatedInventoryIndexRoute,
 }
 
