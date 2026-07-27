@@ -10,6 +10,8 @@ import {
   Settings,
   PackagePlus,
   Bell,
+  ScanLine,
+  ArrowRightLeft,
 } from "lucide-react";
 import {
   Sidebar,
