@@ -48,7 +48,7 @@ function Offcuts() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("offcuts")
-        .select("*, plates(plate_code), jobs(job_number)")
+        .select("*, plates(plate_code)")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
@@ -150,7 +150,6 @@ function Offcuts() {
                   <TableRow>
                     <TableHead>Offcut ID</TableHead>
                     <TableHead>Parent plate</TableHead>
-                    <TableHead>Job</TableHead>
                     <TableHead className="text-right">Size</TableHead>
                     <TableHead className="text-right">Area</TableHead>
                     <TableHead>Shape</TableHead>
@@ -163,7 +162,6 @@ function Offcuts() {
                     <TableRow key={o.id}>
                       <TableCell className="numeric font-medium">{o.offcut_code}</TableCell>
                       <TableCell>{o.plates?.plate_code ?? "—"}</TableCell>
-                      <TableCell>{o.jobs?.job_number ?? "—"}</TableCell>
                       <TableCell className="numeric text-right">
                         {Number(o.width).toFixed(1)}×{Number(o.height).toFixed(1)}"
                       </TableCell>
