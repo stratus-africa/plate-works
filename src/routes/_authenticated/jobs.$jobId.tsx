@@ -30,14 +30,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  MASTER_PLATE_HEIGHT,
-  MASTER_PLATE_WIDTH,
   CLAMP_MARGIN,
   MASTER_PLATE_HEIGHT,
   MASTER_PLATE_WIDTH,
   findBestOffcut,
   optimizeJob,
 } from "@/lib/optimizer";
+
 import { audit, logTransaction, notify } from "@/lib/data";
 import { useAuth } from "@/lib/auth";
 
