@@ -42,6 +42,7 @@ import { useAuth } from "@/lib/auth";
 import { audit } from "@/lib/data";
 import { exportToCsv } from "@/lib/export";
 import { parseCustomerCsv, type ParsedCustomerRow } from "@/lib/customer-import";
+import { BulkBar, RowCheckbox, SelectAllCheckbox, useRowSelection } from "@/components/bulk-bar";
 
 export const Route = createFileRoute("/_authenticated/customers")({
   head: () => ({
