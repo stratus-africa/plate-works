@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  CLAMP_MARGIN,
   MASTER_PLATE_HEIGHT,
   MASTER_PLATE_WIDTH,
   findBestOffcut,
