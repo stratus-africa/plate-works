@@ -251,6 +251,25 @@ function NewJob() {
                   onChange={(e) => setForm((f) => ({ ...f, due_date: e.target.value }))}
                 />
               </div>
+              <div className="space-y-2">
+                <Label>Machine / printer</Label>
+                <Select value={machine.id} onValueChange={setMachineId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select machine" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(machines ?? []).map((m) => (
+                      <SelectItem key={m.id} value={m.id}>
+                        {m.name} — {m.clampMargin}" clamp
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Clamp margin comes from Settings and is reserved on every edge.
+                </p>
+              </div>
+
             </CardContent>
           </Card>
 
