@@ -198,17 +198,20 @@ export interface OffcutCandidate {
 
 /**
  * Intelligent offcut search: any offcut that can hold the required piece in
- * either orientation, choosing the SMALLEST usable one to preserve big sheets.
+ * either orientation once the machine clamp band is reserved on every edge,
+ * choosing the SMALLEST usable one to preserve big sheets.
  */
 export function findBestOffcut<T extends OffcutCandidate>(
   offcuts: T[],
   requiredWidth: number,
   requiredHeight: number,
+  clampMargin = CLAMP_MARGIN,
 ): T | null {
+  const reqW = requiredWidth + clampMargin * 2;
+  const reqH = requiredHeight + clampMargin * 2;
   const usable = offcuts.filter(
     (o) =>
-      (o.width >= requiredWidth && o.height >= requiredHeight) ||
-      (o.width >= requiredHeight && o.height >= requiredWidth),
+      (o.width >= reqW && o.height >= reqH) || (o.width >= reqH && o.height >= reqW),
   );
   if (usable.length === 0) return null;
   return usable.reduce((best, cur) => (cur.area < best.area ? cur : best));
