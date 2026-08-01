@@ -55,7 +55,9 @@ const groups = [
     items: [
       { title: "Reports", url: "/reports", icon: BarChart3 },
       { title: "Notifications", url: "/notifications", icon: Bell },
+      { title: "Roles & Access", url: "/roles", icon: ShieldCheck },
       { title: "Settings", url: "/settings", icon: Settings },
+
     ],
   },
 ];
