@@ -258,7 +258,9 @@ function NewJob() {
                 />
               ) : (
                 <p className="text-sm text-destructive">
-                  The effective size does not fit on a 42" × 60" master plate.
+                  The effective size does not fit inside the {opt.usableWidth.toFixed(2)}" ×{" "}
+                  {opt.usableHeight.toFixed(2)}" nestable area of a 42" × 60" master plate (after the{" "}
+                  {CLAMP_MARGIN}" clamp margin on every edge).
                 </p>
               )}
             </CardContent>
@@ -273,7 +275,13 @@ function NewJob() {
             <CardContent className="space-y-2 text-sm">
               <Row label="Effective plate size" value={`${effWidth.toFixed(2)}" × ${effHeight.toFixed(2)}"`} strong />
               <Row label="Master plate" value={'42" × 60"'} />
+              <Row label="Clamp margin (per edge)" value={`${CLAMP_MARGIN}"`} />
+              <Row
+                label="Nestable area"
+                value={`${opt.usableWidth.toFixed(2)}" × ${opt.usableHeight.toFixed(2)}"`}
+              />
               <Row label="Across × down" value={`${opt.across} × ${opt.down}`} />
+
               <Row label="Pieces per plate" value={String(opt.piecesPerPlate)} strong />
               <Row label="Plates required" value={String(opt.platesRequired)} strong />
               <Row label="Material utilisation" value={`${opt.utilization.toFixed(1)}%`} />
