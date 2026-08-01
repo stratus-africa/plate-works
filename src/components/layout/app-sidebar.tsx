@@ -13,6 +13,7 @@ import {
   ScanLine,
   ArrowRightLeft,
   ShieldCheck,
+  Truck,
 } from "lucide-react";
 import {
   Sidebar,
@@ -49,6 +50,7 @@ const groups = [
     items: [
       { title: "Jobs", url: "/jobs", icon: ClipboardList },
       { title: "Customers", url: "/customers", icon: Users },
+      { title: "Suppliers", url: "/suppliers", icon: Truck },
     ],
   },
   {

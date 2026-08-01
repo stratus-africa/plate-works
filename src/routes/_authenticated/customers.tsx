@@ -42,6 +42,7 @@ import { useAuth } from "@/lib/auth";
 import { audit } from "@/lib/data";
 import { exportToCsv } from "@/lib/export";
 import { parseCustomerCsv, type ParsedCustomerRow } from "@/lib/customer-import";
+import { BulkBar, RowCheckbox, SelectAllCheckbox, useRowSelection } from "@/components/bulk-bar";
 
 export const Route = createFileRoute("/_authenticated/customers")({
   head: () => ({
@@ -104,6 +105,9 @@ function Customers() {
         .some((v) => String(v).toLowerCase().includes(q)),
     );
   }, [data, search]);
+
+  const selection = useRowSelection(filtered.map((c) => c.id));
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
 
   const validate = () => {
     const result = schema.safeParse(form);
@@ -192,6 +196,34 @@ function Customers() {
     onSuccess: () => {
       toast.success("Customer deleted");
       setDeleteTarget(null);
+      queryClient.invalidateQueries({ queryKey: ["customers"] });
+    },
+    onError: (err) => toast.error((err as Error).message),
+  });
+
+  const bulkRemove = useMutation({
+    mutationFn: async () => {
+      const ids = selection.selectedIds;
+      const { data: linked } = await supabase
+        .from("jobs")
+        .select("customer_id")
+        .in("customer_id", ids);
+      const blocked = new Set((linked ?? []).map((j) => j.customer_id));
+      const deletable = ids.filter((id) => !blocked.has(id));
+      if (deletable.length === 0) {
+        throw new Error("All selected customers are referenced by existing jobs.");
+      }
+      const { error } = await supabase.from("customers").delete().in("id", deletable);
+      if (error) throw error;
+      await audit("bulk_delete_customers", "customers", null, { ids: deletable }, null);
+      return { deleted: deletable.length, skipped: ids.length - deletable.length };
+    },
+    onSuccess: ({ deleted, skipped }) => {
+      toast.success(
+        `${deleted} customer(s) deleted${skipped ? ` — ${skipped} skipped (linked to jobs)` : ""}`,
+      );
+      setBulkDeleteOpen(false);
+      selection.clear();
       queryClient.invalidateQueries({ queryKey: ["customers"] });
     },
     onError: (err) => toast.error((err as Error).message),
@@ -425,6 +457,28 @@ function Customers() {
         </AlertDialogContent>
       </AlertDialog>
 
+      <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selection.count} customer(s)?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Selected customers referenced by existing jobs are skipped automatically.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                bulkRemove.mutate();
+              }}
+            >
+              Delete customers
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <Card>
         <CardContent className="space-y-4 p-4">
           <div className="relative max-w-sm">
@@ -436,6 +490,18 @@ function Customers() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
+          {can("manageCustomers") && (
+            <BulkBar count={selection.count} noun="customer" onClear={selection.clear}>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setBulkDeleteOpen(true)}
+                disabled={bulkRemove.isPending}
+              >
+                <Trash2 className="mr-1 h-3.5 w-3.5" /> Delete
+              </Button>
+            </BulkBar>
+          )}
           {isLoading ? (
             <Skeleton className="h-64 w-full" />
           ) : filtered.length === 0 ? (
@@ -444,6 +510,15 @@ function Customers() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  {can("manageCustomers") && (
+                    <TableHead className="w-10">
+                      <SelectAllCheckbox
+                        allSelected={selection.allSelected}
+                        someSelected={selection.someSelected}
+                        onChange={selection.toggleAll}
+                      />
+                    </TableHead>
+                  )}
                   <TableHead>Company</TableHead>
                   <TableHead>Contact</TableHead>
                   <TableHead>Phone</TableHead>
@@ -454,8 +529,18 @@ function Customers() {
               </TableHeader>
               <TableBody>
                 {filtered.map((c) => (
-                  <TableRow key={c.id}>
+                  <TableRow key={c.id} data-state={selection.selected.has(c.id) ? "selected" : undefined}>
+                    {can("manageCustomers") && (
+                      <TableCell>
+                        <RowCheckbox
+                          label={c.company}
+                          checked={selection.selected.has(c.id)}
+                          onChange={(on) => selection.toggle(c.id, on)}
+                        />
+                      </TableCell>
+                    )}
                     <TableCell className="font-medium">{c.company}</TableCell>
+
                     <TableCell>{c.contact_person ?? "—"}</TableCell>
                     <TableCell className="numeric">{c.phone ?? "—"}</TableCell>
                     <TableCell>{c.email ?? "—"}</TableCell>
