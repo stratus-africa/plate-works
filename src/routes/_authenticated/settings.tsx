@@ -40,6 +40,8 @@ import {
 import { ROLE_LABELS, useAuth, type AppRole } from "@/lib/auth";
 import { audit } from "@/lib/data";
 import { adminCreateUser } from "@/lib/admin-users.functions";
+import { saveMachines, useMachines, type Machine } from "@/lib/machines";
+
 
 
 export const Route = createFileRoute("/_authenticated/settings")({
