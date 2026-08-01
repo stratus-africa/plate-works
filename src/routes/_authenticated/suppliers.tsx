@@ -207,6 +207,9 @@ function Suppliers() {
     onError: (e) => toast.error((e as Error).message),
   });
 
+  const [bulkContactOpen, setBulkContactOpen] = useState(false);
+  const [bulkContactValue, setBulkContactValue] = useState("");
+
   const bulkContact = useMutation({
     mutationFn: async (value: string) => {
       const ids = selection.selectedIds;
@@ -227,9 +230,6 @@ function Suppliers() {
     },
     onError: (e) => toast.error((e as Error).message),
   });
-
-  const [bulkContactOpen, setBulkContactOpen] = useState(false);
-  const [bulkContactValue, setBulkContactValue] = useState("");
 
   const field = (key: FormKey, label: string) => (
     <div className="space-y-2">
