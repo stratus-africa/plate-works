@@ -51,9 +51,45 @@ export const Route = createFileRoute("/_authenticated/settings")({
   component: Settings,
 });
 
+const emptyNewUser = {
+  fullName: "",
+  email: "",
+  password: "",
+  role: "production_operator" as AppRole,
+};
+
+const newUserSchema = z.object({
+  fullName: z.string().trim().min(2, "Full name is required").max(100),
+  email: z.string().trim().email("Enter a valid email").max(255),
+  password: z.string().min(8, "Password must be at least 8 characters").max(72),
+});
+
 function Settings() {
   const queryClient = useQueryClient();
   const { can, refreshRoles } = useAuth();
+  const [newUserOpen, setNewUserOpen] = useState(false);
+  const [newUser, setNewUser] = useState(emptyNewUser);
+
+  const createUser = useMutation({
+    mutationFn: async () => {
+      const parsed = newUserSchema.parse(newUser);
+      const result = await adminCreateUser({ data: { ...parsed, role: newUser.role } });
+      await audit("create_user", "auth.users", result.id, null, {
+        email: parsed.email,
+        role: newUser.role,
+      });
+    },
+    onSuccess: () => {
+      toast.success("User account created");
+      setNewUserOpen(false);
+      setNewUser(emptyNewUser);
+      queryClient.invalidateQueries({ queryKey: ["users-roles"] });
+    },
+    onError: (err) =>
+      toast.error(err instanceof z.ZodError ? err.issues[0].message : (err as Error).message),
+  });
+
+
 
   const { data, isLoading } = useQuery({
     queryKey: ["users-roles"],
