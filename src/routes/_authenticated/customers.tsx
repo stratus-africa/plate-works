@@ -48,17 +48,20 @@ const schema = z.object({
   address: z.string().trim().max(300).optional(),
 });
 
+const emptyForm = {
+  company: "",
+  contact_person: "",
+  phone: "",
+  email: "",
+  address: "",
+};
+
 function Customers() {
   const queryClient = useQueryClient();
   const { can } = useAuth();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({
-    company: "",
-    contact_person: "",
-    phone: "",
-    email: "",
-    address: "",
-  });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState(emptyForm);
 
   const { data, isLoading } = useQuery({
     queryKey: ["customers"],
