@@ -88,6 +88,13 @@ export function CuttingLayoutPreview({
         <span className="flex items-center gap-1">
           <span className="h-3 w-3 rounded-sm bg-primary/75" /> Allocated
         </span>
+        {layout.clampMargin > 0 && (
+          <span className="flex items-center gap-1">
+            <span className="h-3 w-3 rounded-sm border-2 border-dashed border-destructive" /> Clamp
+            margin {layout.clampMargin}&quot; (reserved)
+          </span>
+        )}
+
         <span className="flex items-center gap-1">
           <span className="h-3 w-3 rounded-sm bg-accent/40" /> Reusable offcut
         </span>
