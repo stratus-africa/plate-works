@@ -201,6 +201,34 @@ function Customers() {
     onError: (err) => toast.error((err as Error).message),
   });
 
+  const bulkRemove = useMutation({
+    mutationFn: async () => {
+      const ids = selection.selectedIds;
+      const { data: linked } = await supabase
+        .from("jobs")
+        .select("customer_id")
+        .in("customer_id", ids);
+      const blocked = new Set((linked ?? []).map((j) => j.customer_id));
+      const deletable = ids.filter((id) => !blocked.has(id));
+      if (deletable.length === 0) {
+        throw new Error("All selected customers are referenced by existing jobs.");
+      }
+      const { error } = await supabase.from("customers").delete().in("id", deletable);
+      if (error) throw error;
+      await audit("bulk_delete_customers", "customers", null, { ids: deletable }, null);
+      return { deleted: deletable.length, skipped: ids.length - deletable.length };
+    },
+    onSuccess: ({ deleted, skipped }) => {
+      toast.success(
+        `${deleted} customer(s) deleted${skipped ? ` — ${skipped} skipped (linked to jobs)` : ""}`,
+      );
+      setBulkDeleteOpen(false);
+      selection.clear();
+      queryClient.invalidateQueries({ queryKey: ["customers"] });
+    },
+    onError: (err) => toast.error((err as Error).message),
+  });
+
   const runImport = useMutation({
     mutationFn: async () => {
       const rows = (importRows ?? []).filter((r) => r.status === "new");
