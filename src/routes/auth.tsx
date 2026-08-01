@@ -136,86 +136,48 @@ function AuthPage() {
             </span>
           </div>
 
-          <Tabs defaultValue="signin">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign in</TabsTrigger>
-              <TabsTrigger value="signup">Create account</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="signin" className="space-y-5 pt-8">
-              <div>
-                <h1 className="font-display text-2xl font-semibold">Sign in to your workspace</h1>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Enter your work email and password below.
-                </p>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Work email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@company.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-              <Button className="w-full" disabled={loading} onClick={() => submit("signin")}>
-                Sign in
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </TabsContent>
-
-            <TabsContent value="signup" className="space-y-5 pt-8">
-              <div>
-                <h1 className="font-display text-2xl font-semibold">Create your account</h1>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Join the production floor in under a minute.
-                </p>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="name">Full name</Label>
-                <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email2">Work email</Label>
-                <Input
-                  id="email2"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password2">Password</Label>
-                <Input
-                  id="password2"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                The first account created becomes the Administrator. Later accounts start as
-                Production Operator and can be promoted from Settings.
+          <div className="space-y-5">
+            <div>
+              <h1 className="font-display text-2xl font-semibold">Sign in to your workspace</h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Enter your work email and password below.
               </p>
-              <Button className="w-full" disabled={loading} onClick={() => submit("signup")}>
-                Create account
-              </Button>
-            </TabsContent>
-          </Tabs>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Work email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@company.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") void submit();
+                }}
+              />
+            </div>
+            <Button className="w-full" disabled={loading} onClick={() => submit()}>
+              Sign in
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+            <p className="text-center text-xs text-muted-foreground">
+              Accounts are issued by your administrator. Contact them if you need access.
+            </p>
+          </div>
         </div>
       </div>
     </div>
   );
 }
+
 
