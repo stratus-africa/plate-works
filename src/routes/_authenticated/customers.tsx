@@ -106,6 +106,9 @@ function Customers() {
     );
   }, [data, search]);
 
+  const selection = useRowSelection(filtered.map((c) => c.id));
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+
   const validate = () => {
     const result = schema.safeParse(form);
     if (!result.success) {
