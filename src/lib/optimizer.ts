@@ -153,9 +153,10 @@ export function bestLayout(
   effectiveHeight: number,
   plateWidth = MASTER_PLATE_WIDTH,
   plateHeight = MASTER_PLATE_HEIGHT,
+  clampMargin = CLAMP_MARGIN,
 ): LayoutResult {
-  const normal = buildLayout(effectiveWidth, effectiveHeight, plateWidth, plateHeight, false);
-  const turned = buildLayout(effectiveHeight, effectiveWidth, plateWidth, plateHeight, true);
+  const normal = buildLayout(effectiveWidth, effectiveHeight, plateWidth, plateHeight, false, clampMargin);
+  const turned = buildLayout(effectiveHeight, effectiveWidth, plateWidth, plateHeight, true, clampMargin);
   return turned.piecesPerPlate > normal.piecesPerPlate ? turned : normal;
 }
 
@@ -166,8 +167,9 @@ export function optimizeJob(
   quantity: number,
   plateWidth = MASTER_PLATE_WIDTH,
   plateHeight = MASTER_PLATE_HEIGHT,
+  clampMargin = CLAMP_MARGIN,
 ): JobOptimization {
-  const layout = bestLayout(effectiveWidth, effectiveHeight, plateWidth, plateHeight);
+  const layout = bestLayout(effectiveWidth, effectiveHeight, plateWidth, plateHeight, clampMargin);
   const qty = Math.max(1, Math.floor(quantity || 1));
   const fits = layout.piecesPerPlate > 0;
   const platesRequired = fits ? Math.ceil(qty / layout.piecesPerPlate) : 0;
