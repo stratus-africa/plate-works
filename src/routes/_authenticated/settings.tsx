@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -280,11 +280,20 @@ function Settings() {
               })}
             </TableBody>
           </Table>
-          {!can("manageUsers") && (
+          {can("manageUsers") ? (
+            <p className="mt-3 text-sm text-muted-foreground">
+              Need templates, search and revoke confirmations?{" "}
+              <Link to="/roles" className="font-medium text-primary underline-offset-4 hover:underline">
+                Open Role Management
+              </Link>
+              .
+            </p>
+          ) : (
             <p className="mt-3 text-sm text-muted-foreground">
               Only administrators can change roles.
             </p>
           )}
+
         </CardContent>
       </Card>
 

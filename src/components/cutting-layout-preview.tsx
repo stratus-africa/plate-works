@@ -32,6 +32,20 @@ export function CuttingLayoutPreview({
         aria-label="Cutting layout preview"
       >
         <rect x={0} y={0} width={w} height={h} fill="var(--muted)" stroke="var(--border)" />
+        {layout.clampMargin > 0 && (
+          <rect
+            x={layout.clampMargin * scale}
+            y={layout.clampMargin * scale}
+            width={(plateWidth - layout.clampMargin * 2) * scale}
+            height={(plateHeight - layout.clampMargin * 2) * scale}
+            fill="var(--background)"
+            fillOpacity={0.6}
+            stroke="var(--destructive)"
+            strokeDasharray="6 4"
+            strokeWidth={2}
+          />
+        )}
+
         {layout.offcuts.map((o, i) => (
           <rect
             key={`offcut-${i}`}
@@ -74,6 +88,13 @@ export function CuttingLayoutPreview({
         <span className="flex items-center gap-1">
           <span className="h-3 w-3 rounded-sm bg-primary/75" /> Allocated
         </span>
+        {layout.clampMargin > 0 && (
+          <span className="flex items-center gap-1">
+            <span className="h-3 w-3 rounded-sm border-2 border-dashed border-destructive" /> Clamp
+            margin {layout.clampMargin}&quot; (reserved)
+          </span>
+        )}
+
         <span className="flex items-center gap-1">
           <span className="h-3 w-3 rounded-sm bg-accent/40" /> Reusable offcut
         </span>

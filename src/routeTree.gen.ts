@@ -15,6 +15,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedScanRouteImport } from './routes/_authenticated/scan'
+import { Route as AuthenticatedRolesRouteImport } from './routes/_authenticated/roles'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedPlatesRouteImport } from './routes/_authenticated/plates'
 import { Route as AuthenticatedOffcutsRouteImport } from './routes/_authenticated/offcuts'
@@ -55,6 +56,11 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
 const AuthenticatedScanRoute = AuthenticatedScanRouteImport.update({
   id: '/scan',
   path: '/scan',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRolesRoute = AuthenticatedRolesRouteImport.update({
+  id: '/roles',
+  path: '/roles',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
@@ -132,6 +138,7 @@ export interface FileRoutesByFullPath {
   '/offcuts': typeof AuthenticatedOffcutsRoute
   '/plates': typeof AuthenticatedPlatesRoute
   '/reports': typeof AuthenticatedReportsRoute
+  '/roles': typeof AuthenticatedRolesRoute
   '/scan': typeof AuthenticatedScanRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/inventory/receive': typeof AuthenticatedInventoryReceiveRoute
@@ -151,6 +158,7 @@ export interface FileRoutesByTo {
   '/offcuts': typeof AuthenticatedOffcutsRoute
   '/plates': typeof AuthenticatedPlatesRoute
   '/reports': typeof AuthenticatedReportsRoute
+  '/roles': typeof AuthenticatedRolesRoute
   '/scan': typeof AuthenticatedScanRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/inventory/receive': typeof AuthenticatedInventoryReceiveRoute
@@ -172,6 +180,7 @@ export interface FileRoutesById {
   '/_authenticated/offcuts': typeof AuthenticatedOffcutsRoute
   '/_authenticated/plates': typeof AuthenticatedPlatesRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
+  '/_authenticated/roles': typeof AuthenticatedRolesRoute
   '/_authenticated/scan': typeof AuthenticatedScanRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/inventory/receive': typeof AuthenticatedInventoryReceiveRoute
@@ -193,6 +202,7 @@ export interface FileRouteTypes {
     | '/offcuts'
     | '/plates'
     | '/reports'
+    | '/roles'
     | '/scan'
     | '/settings'
     | '/inventory/receive'
@@ -212,6 +222,7 @@ export interface FileRouteTypes {
     | '/offcuts'
     | '/plates'
     | '/reports'
+    | '/roles'
     | '/scan'
     | '/settings'
     | '/inventory/receive'
@@ -232,6 +243,7 @@ export interface FileRouteTypes {
     | '/_authenticated/offcuts'
     | '/_authenticated/plates'
     | '/_authenticated/reports'
+    | '/_authenticated/roles'
     | '/_authenticated/scan'
     | '/_authenticated/settings'
     | '/_authenticated/inventory/receive'
@@ -291,6 +303,13 @@ declare module '@tanstack/react-router' {
       path: '/scan'
       fullPath: '/scan'
       preLoaderRoute: typeof AuthenticatedScanRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/roles': {
+      id: '/_authenticated/roles'
+      path: '/roles'
+      fullPath: '/roles'
+      preLoaderRoute: typeof AuthenticatedRolesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/reports': {
@@ -387,6 +406,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedOffcutsRoute: typeof AuthenticatedOffcutsRoute
   AuthenticatedPlatesRoute: typeof AuthenticatedPlatesRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
+  AuthenticatedRolesRoute: typeof AuthenticatedRolesRoute
   AuthenticatedScanRoute: typeof AuthenticatedScanRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedInventoryReceiveRoute: typeof AuthenticatedInventoryReceiveRoute
@@ -404,6 +424,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOffcutsRoute: AuthenticatedOffcutsRoute,
   AuthenticatedPlatesRoute: AuthenticatedPlatesRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
+  AuthenticatedRolesRoute: AuthenticatedRolesRoute,
   AuthenticatedScanRoute: AuthenticatedScanRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedInventoryReceiveRoute: AuthenticatedInventoryReceiveRoute,

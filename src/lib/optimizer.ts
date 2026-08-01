@@ -13,6 +13,13 @@
 export const MASTER_PLATE_WIDTH = 42;
 export const MASTER_PLATE_HEIGHT = 60;
 
+/**
+ * Reserved edge band (inches) on every side of a plate or offcut that the press
+ * clamps onto. No artwork may be nested inside this band, and it is never
+ * recovered as a reusable offcut.
+ */
+export const CLAMP_MARGIN = 1.5;
+
 export interface Placement {
   x: number;
   y: number;
@@ -44,6 +51,12 @@ export interface LayoutResult {
   wastePercent: number;
   placements: Placement[];
   offcuts: OffcutRegion[];
+  /** Reserved clamp band on each edge (inches). */
+  clampMargin: number;
+  /** Nestable area inside the clamp band. */
+  usableWidth: number;
+  usableHeight: number;
+  clampArea: number;
 }
 
 export interface JobOptimization extends LayoutResult {
@@ -60,11 +73,16 @@ export function buildLayout(
   plateW: number,
   plateH: number,
   rotated: boolean,
+  clampMargin = CLAMP_MARGIN,
 ): LayoutResult {
-  const across = pieceW > 0 ? Math.floor(plateW / pieceW) : 0;
-  const down = pieceH > 0 ? Math.floor(plateH / pieceH) : 0;
+  const clamp = Math.max(0, clampMargin);
+  const usableW = Math.max(plateW - clamp * 2, 0);
+  const usableH = Math.max(plateH - clamp * 2, 0);
+  const across = pieceW > 0 ? Math.floor(usableW / pieceW) : 0;
+  const down = pieceH > 0 ? Math.floor(usableH / pieceH) : 0;
   const piecesPerPlate = across * down;
   const plateArea = plateW * plateH;
+  const clampArea = Math.max(plateArea - usableW * usableH, 0);
   const usedArea = piecesPerPlate * pieceW * pieceH;
   const wasteArea = Math.max(plateArea - usedArea, 0);
 
@@ -73,8 +91,8 @@ export function buildLayout(
   for (let row = 0; row < down; row++) {
     for (let col = 0; col < across; col++) {
       placements.push({
-        x: col * pieceW,
-        y: row * pieceH,
+        x: clamp + col * pieceW,
+        y: clamp + row * pieceH,
         width: pieceW,
         height: pieceH,
         index: index++,
@@ -82,17 +100,30 @@ export function buildLayout(
     }
   }
 
-  // Remaining material is split into a right strip and a bottom strip (guillotine cuts).
+  // Remaining usable material is split into a right strip and a bottom strip
+  // (guillotine cuts). The clamp band is never offered as a reusable offcut.
   const offcuts: OffcutRegion[] = [];
   const usedW = across * pieceW;
   const usedH = down * pieceH;
-  const rightW = plateW - usedW;
-  const bottomH = plateH - usedH;
+  const rightW = usableW - usedW;
+  const bottomH = usableH - usedH;
   if (rightW > 0.01 && usedH > 0.01) {
-    offcuts.push({ x: usedW, y: 0, width: rightW, height: usedH, label: "Side offcut" });
+    offcuts.push({
+      x: clamp + usedW,
+      y: clamp,
+      width: rightW,
+      height: usedH,
+      label: "Side offcut",
+    });
   }
-  if (bottomH > 0.01 && plateW > 0.01) {
-    offcuts.push({ x: 0, y: usedH, width: plateW, height: bottomH, label: "Bottom offcut" });
+  if (bottomH > 0.01 && usableW > 0.01) {
+    offcuts.push({
+      x: clamp,
+      y: clamp + usedH,
+      width: usableW,
+      height: bottomH,
+      label: "Bottom offcut",
+    });
   }
 
   return {
@@ -109,6 +140,10 @@ export function buildLayout(
     wastePercent: plateArea > 0 ? (wasteArea / plateArea) * 100 : 0,
     placements,
     offcuts,
+    clampMargin: clamp,
+    usableWidth: usableW,
+    usableHeight: usableH,
+    clampArea,
   };
 }
 
@@ -118,9 +153,10 @@ export function bestLayout(
   effectiveHeight: number,
   plateWidth = MASTER_PLATE_WIDTH,
   plateHeight = MASTER_PLATE_HEIGHT,
+  clampMargin = CLAMP_MARGIN,
 ): LayoutResult {
-  const normal = buildLayout(effectiveWidth, effectiveHeight, plateWidth, plateHeight, false);
-  const turned = buildLayout(effectiveHeight, effectiveWidth, plateWidth, plateHeight, true);
+  const normal = buildLayout(effectiveWidth, effectiveHeight, plateWidth, plateHeight, false, clampMargin);
+  const turned = buildLayout(effectiveHeight, effectiveWidth, plateWidth, plateHeight, true, clampMargin);
   return turned.piecesPerPlate > normal.piecesPerPlate ? turned : normal;
 }
 
@@ -131,8 +167,9 @@ export function optimizeJob(
   quantity: number,
   plateWidth = MASTER_PLATE_WIDTH,
   plateHeight = MASTER_PLATE_HEIGHT,
+  clampMargin = CLAMP_MARGIN,
 ): JobOptimization {
-  const layout = bestLayout(effectiveWidth, effectiveHeight, plateWidth, plateHeight);
+  const layout = bestLayout(effectiveWidth, effectiveHeight, plateWidth, plateHeight, clampMargin);
   const qty = Math.max(1, Math.floor(quantity || 1));
   const fits = layout.piecesPerPlate > 0;
   const platesRequired = fits ? Math.ceil(qty / layout.piecesPerPlate) : 0;
@@ -161,17 +198,20 @@ export interface OffcutCandidate {
 
 /**
  * Intelligent offcut search: any offcut that can hold the required piece in
- * either orientation, choosing the SMALLEST usable one to preserve big sheets.
+ * either orientation once the machine clamp band is reserved on every edge,
+ * choosing the SMALLEST usable one to preserve big sheets.
  */
 export function findBestOffcut<T extends OffcutCandidate>(
   offcuts: T[],
   requiredWidth: number,
   requiredHeight: number,
+  clampMargin = CLAMP_MARGIN,
 ): T | null {
+  const reqW = requiredWidth + clampMargin * 2;
+  const reqH = requiredHeight + clampMargin * 2;
   const usable = offcuts.filter(
     (o) =>
-      (o.width >= requiredWidth && o.height >= requiredHeight) ||
-      (o.width >= requiredHeight && o.height >= requiredWidth),
+      (o.width >= reqW && o.height >= reqH) || (o.width >= reqH && o.height >= reqW),
   );
   if (usable.length === 0) return null;
   return usable.reduce((best, cur) => (cur.area < best.area ? cur : best));
