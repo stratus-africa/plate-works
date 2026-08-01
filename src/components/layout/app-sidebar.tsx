@@ -12,6 +12,7 @@ import {
   Bell,
   ScanLine,
   ArrowRightLeft,
+  ShieldCheck,
 } from "lucide-react";
 import {
   Sidebar,
