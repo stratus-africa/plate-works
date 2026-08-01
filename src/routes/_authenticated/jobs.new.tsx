@@ -20,14 +20,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  CLAMP_MARGIN,
   MASTER_PLATE_HEIGHT,
   MASTER_PLATE_WIDTH,
   findBestOffcut,
   optimizeJob,
 } from "@/lib/optimizer";
+import { defaultMachine, useMachines } from "@/lib/machines";
 import { audit, notify } from "@/lib/data";
 import { useAuth } from "@/lib/auth";
+
 
 export const Route = createFileRoute("/_authenticated/jobs/new")({
   head: () => ({
