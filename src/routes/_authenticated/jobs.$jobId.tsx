@@ -412,6 +412,8 @@ function JobDetail() {
           effectiveHeight={Number(job.effective_height)}
           quantity={job.quantity}
           product={job.product}
+          clampMargin={jobClamp}
+
         />
       </div>
 
