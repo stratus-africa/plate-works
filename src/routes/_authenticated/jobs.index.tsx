@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Download, Plus } from "lucide-react";
+import { Download, Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader, EmptyState } from "@/components/page-header";
 import { StatusBadge } from "@/components/status-badge";
@@ -24,8 +25,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { exportToCsv } from "@/lib/export";
+import { BulkBar, RowCheckbox, SelectAllCheckbox, useRowSelection } from "@/components/bulk-bar";
 import { useAuth } from "@/lib/auth";
+import { audit } from "@/lib/data";
 
 export const Route = createFileRoute("/_authenticated/jobs/")({
   head: () => ({
@@ -37,10 +50,22 @@ export const Route = createFileRoute("/_authenticated/jobs/")({
   component: Jobs,
 });
 
+const JOB_STATUSES = [
+  { value: "draft", label: "Draft" },
+  { value: "pending", label: "Pending" },
+  { value: "approved", label: "Approved" },
+  { value: "in_production", label: "In production" },
+  { value: "completed", label: "Completed" },
+  { value: "cancelled", label: "Cancelled" },
+] as const;
+
 function Jobs() {
+  const queryClient = useQueryClient();
   const { can } = useAuth();
   const [term, setTerm] = useState("");
   const [status, setStatus] = useState("all");
+  const [bulkStatus, setBulkStatus] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["jobs"],
@@ -61,6 +86,51 @@ function Jobs() {
         j.product.toLowerCase().includes(term.toLowerCase()) ||
         (j.customers?.company ?? "").toLowerCase().includes(term.toLowerCase())),
   );
+
+  const selection = useRowSelection(rows.map((r) => r.id));
+  const canManage = can("approveJobs");
+
+  const bulkUpdate = useMutation({
+    mutationFn: async (nextStatus: string) => {
+      const ids = selection.selectedIds;
+      const { error } = await supabase
+        .from("jobs")
+        .update({
+          status: nextStatus as never,
+          completed_at: nextStatus === "completed" ? new Date().toISOString() : null,
+        })
+        .in("id", ids);
+      if (error) throw error;
+      await audit("bulk_update_jobs", "jobs", null, null, { ids, status: nextStatus });
+      return ids.length;
+    },
+    onSuccess: (n) => {
+      toast.success(`${n} job(s) updated`);
+      setBulkStatus("");
+      selection.clear();
+      queryClient.invalidateQueries({ queryKey: ["jobs"] });
+    },
+    onError: (e) => toast.error((e as Error).message),
+  });
+
+  const bulkDelete = useMutation({
+    mutationFn: async () => {
+      const ids = selection.selectedIds;
+      // Remove dependent allocations first so the delete is not blocked.
+      await supabase.from("plate_allocations").delete().in("job_id", ids);
+      const { error } = await supabase.from("jobs").delete().in("id", ids);
+      if (error) throw error;
+      await audit("bulk_delete_jobs", "jobs", null, { ids }, null);
+      return ids.length;
+    },
+    onSuccess: (n) => {
+      toast.success(`${n} job(s) deleted`);
+      setConfirmDelete(false);
+      selection.clear();
+      queryClient.invalidateQueries({ queryKey: ["jobs"] });
+    },
+    onError: (e) => toast.error((e as Error).message),
+  });
 
   return (
     <div>
@@ -102,6 +172,29 @@ function Jobs() {
         }
       />
 
+      <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selection.count} job(s)?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently removes the selected jobs and their plate allocations. Consumed
+              material is not returned to stock.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                bulkDelete.mutate();
+              }}
+            >
+              Delete jobs
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <Card>
         <CardContent className="p-4">
           <div className="mb-4 flex flex-wrap gap-3">
@@ -111,20 +204,59 @@ function Jobs() {
               value={term}
               onChange={(e) => setTerm(e.target.value)}
             />
-            <Select value={status} onValueChange={setStatus}>
+            <Select
+              value={status}
+              onValueChange={(v) => {
+                setStatus(v);
+                selection.clear();
+              }}
+            >
               <SelectTrigger className="w-44">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All statuses</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="approved">Approved</SelectItem>
-                <SelectItem value="in_production">In production</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
+                {JOB_STATUSES.map((s) => (
+                  <SelectItem key={s.value} value={s.value}>
+                    {s.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
+
+          {canManage && (
+            <div className="mb-4">
+              <BulkBar count={selection.count} noun="job" onClear={selection.clear}>
+                <Select
+                  value={bulkStatus}
+                  onValueChange={(v) => {
+                    setBulkStatus(v);
+                    bulkUpdate.mutate(v);
+                  }}
+                >
+                  <SelectTrigger className="h-9 w-52">
+                    <SelectValue placeholder="Set status…" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {JOB_STATUSES.map((s) => (
+                      <SelectItem key={s.value} value={s.value}>
+                        {s.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setConfirmDelete(true)}
+                  disabled={bulkDelete.isPending}
+                >
+                  <Trash2 className="mr-1 h-3.5 w-3.5" /> Delete
+                </Button>
+              </BulkBar>
+            </div>
+          )}
 
           {isLoading ? (
             <Skeleton className="h-64 w-full" />
@@ -135,6 +267,15 @@ function Jobs() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    {canManage && (
+                      <TableHead className="w-10">
+                        <SelectAllCheckbox
+                          allSelected={selection.allSelected}
+                          someSelected={selection.someSelected}
+                          onChange={selection.toggleAll}
+                        />
+                      </TableHead>
+                    )}
                     <TableHead>Job</TableHead>
                     <TableHead>Customer</TableHead>
                     <TableHead>Product</TableHead>
@@ -148,7 +289,16 @@ function Jobs() {
                 </TableHeader>
                 <TableBody>
                   {rows.map((j) => (
-                    <TableRow key={j.id} className="cursor-pointer">
+                    <TableRow key={j.id} data-state={selection.selected.has(j.id) ? "selected" : undefined}>
+                      {canManage && (
+                        <TableCell>
+                          <RowCheckbox
+                            label={j.job_number}
+                            checked={selection.selected.has(j.id)}
+                            onChange={(on) => selection.toggle(j.id, on)}
+                          />
+                        </TableCell>
+                      )}
                       <TableCell className="numeric font-medium">
                         <Link to="/jobs/$jobId" params={{ jobId: j.id }} className="hover:underline">
                           {j.job_number}
