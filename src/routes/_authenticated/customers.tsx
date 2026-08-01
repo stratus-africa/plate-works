@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { Plus } from "lucide-react";
+import { Plus, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader, EmptyState } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -48,17 +48,20 @@ const schema = z.object({
   address: z.string().trim().max(300).optional(),
 });
 
+const emptyForm = {
+  company: "",
+  contact_person: "",
+  phone: "",
+  email: "",
+  address: "",
+};
+
 function Customers() {
   const queryClient = useQueryClient();
   const { can } = useAuth();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({
-    company: "",
-    contact_person: "",
-    phone: "",
-    email: "",
-    address: "",
-  });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState(emptyForm);
 
   const { data, isLoading } = useQuery({
     queryKey: ["customers"],
@@ -66,21 +69,35 @@ function Customers() {
       (await supabase.from("customers").select("*").order("company")).data ?? [],
   });
 
-  const create = useMutation({
+  const save = useMutation({
     mutationFn: async () => {
       const parsed = schema.parse(form);
-      const { data, error } = await supabase
-        .from("customers")
-        .insert({ ...parsed, email: parsed.email || null })
-        .select()
-        .single();
-      if (error) throw error;
-      await audit("create_customer", "customers", data.id, null, data);
+      const payload = { ...parsed, email: parsed.email || null };
+      if (editingId) {
+        const before = data?.find((c) => c.id === editingId) ?? null;
+        const { data: updated, error } = await supabase
+          .from("customers")
+          .update(payload)
+          .eq("id", editingId)
+          .select()
+          .single();
+        if (error) throw error;
+        await audit("update_customer", "customers", editingId, before, updated);
+      } else {
+        const { data: created, error } = await supabase
+          .from("customers")
+          .insert(payload)
+          .select()
+          .single();
+        if (error) throw error;
+        await audit("create_customer", "customers", created.id, null, created);
+      }
     },
     onSuccess: () => {
-      toast.success("Customer added");
+      toast.success(editingId ? "Customer updated" : "Customer added");
       setOpen(false);
-      setForm({ company: "", contact_person: "", phone: "", email: "", address: "" });
+      setEditingId(null);
+      setForm(emptyForm);
       queryClient.invalidateQueries({ queryKey: ["customers"] });
     },
     onError: (err) =>
@@ -94,6 +111,24 @@ function Customers() {
     </div>
   );
 
+  const openNew = () => {
+    setEditingId(null);
+    setForm(emptyForm);
+    setOpen(true);
+  };
+
+  const openEdit = (c: NonNullable<typeof data>[number]) => {
+    setEditingId(c.id);
+    setForm({
+      company: c.company ?? "",
+      contact_person: c.contact_person ?? "",
+      phone: c.phone ?? "",
+      email: c.email ?? "",
+      address: c.address ?? "",
+    });
+    setOpen(true);
+  };
+
   return (
     <div>
       <PageHeader
@@ -101,33 +136,41 @@ function Customers() {
         description="Companies placing production jobs."
         actions={
           can("manageCustomers") && (
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" /> Add customer
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>New customer</DialogTitle>
-                </DialogHeader>
-                <div className="grid gap-4">
-                  {field("company", "Company")}
-                  {field("contact_person", "Contact person")}
-                  {field("phone", "Phone")}
-                  {field("email", "Email")}
-                  {field("address", "Address")}
-                </div>
-                <DialogFooter>
-                  <Button onClick={() => create.mutate()} disabled={create.isPending}>
-                    Save customer
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+            <Button onClick={openNew}>
+              <Plus className="mr-2 h-4 w-4" /> Add customer
+            </Button>
           )
         }
       />
+
+      <Dialog
+        open={open}
+        onOpenChange={(v) => {
+          setOpen(v);
+          if (!v) {
+            setEditingId(null);
+            setForm(emptyForm);
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingId ? "Edit customer" : "New customer"}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4">
+            {field("company", "Company")}
+            {field("contact_person", "Contact person")}
+            {field("phone", "Phone")}
+            {field("email", "Email")}
+            {field("address", "Address")}
+          </div>
+          <DialogFooter>
+            <Button onClick={() => save.mutate()} disabled={save.isPending}>
+              {editingId ? "Save changes" : "Save customer"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Card>
         <CardContent className="p-4">
@@ -144,6 +187,7 @@ function Customers() {
                   <TableHead>Phone</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Address</TableHead>
+                  <TableHead className="w-24 text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -154,6 +198,15 @@ function Customers() {
                     <TableCell className="numeric">{c.phone ?? "—"}</TableCell>
                     <TableCell>{c.email ?? "—"}</TableCell>
                     <TableCell className="max-w-xs truncate">{c.address ?? "—"}</TableCell>
+                    <TableCell className="text-right">
+                      {can("manageCustomers") ? (
+                        <Button variant="ghost" size="sm" onClick={() => openEdit(c)}>
+                          <Pencil className="mr-1 h-3.5 w-3.5" /> Edit
+                        </Button>
+                      ) : (
+                        "—"
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

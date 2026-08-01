@@ -7,13 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -51,16 +45,32 @@ function Settings() {
     },
   });
 
-  const setRole = useMutation({
-    mutationFn: async ({ userId, role }: { userId: string; role: AppRole }) => {
-      const { error: delError } = await supabase.from("user_roles").delete().eq("user_id", userId);
-      if (delError) throw delError;
-      const { error } = await supabase.from("user_roles").insert({ user_id: userId, role });
-      if (error) throw error;
-      await audit("set_role", "user_roles", userId, null, { role });
+  const toggleRole = useMutation({
+    mutationFn: async ({
+      userId,
+      role,
+      enabled,
+    }: {
+      userId: string;
+      role: AppRole;
+      enabled: boolean;
+    }) => {
+      if (enabled) {
+        const { error } = await supabase.from("user_roles").insert({ user_id: userId, role });
+        if (error) throw error;
+        await audit("grant_role", "user_roles", userId, null, { role });
+      } else {
+        const { error } = await supabase
+          .from("user_roles")
+          .delete()
+          .eq("user_id", userId)
+          .eq("role", role);
+        if (error) throw error;
+        await audit("revoke_role", "user_roles", userId, { role }, null);
+      }
     },
     onSuccess: async () => {
-      toast.success("Role updated");
+      toast.success("Roles updated");
       await refreshRoles();
       queryClient.invalidateQueries({ queryKey: ["users-roles"] });
     },
@@ -69,8 +79,8 @@ function Settings() {
 
   if (isLoading || !data) return <Skeleton className="h-96 w-full" />;
 
-  const roleOf = (userId: string) =>
-    (data.roles.find((r) => r.user_id === userId)?.role as AppRole | undefined) ?? undefined;
+  const rolesOf = (userId: string) =>
+    data.roles.filter((r) => r.user_id === userId).map((r) => r.role as AppRole);
 
   return (
     <div>
@@ -86,39 +96,59 @@ function Settings() {
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead>Role</TableHead>
+                <TableHead>Roles</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data.profiles.map((p) => (
-                <TableRow key={p.id}>
-                  <TableCell className="font-medium">{p.full_name || "—"}</TableCell>
-                  <TableCell>{p.email ?? "—"}</TableCell>
-                  <TableCell>
-                    {can("manageUsers") ? (
-                      <Select
-                        value={roleOf(p.id) ?? ""}
-                        onValueChange={(v) => setRole.mutate({ userId: p.id, role: v as AppRole })}
-                      >
-                        <SelectTrigger className="w-56">
-                          <SelectValue placeholder="Assign role" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {(Object.keys(ROLE_LABELS) as AppRole[]).map((r) => (
-                            <SelectItem key={r} value={r}>
-                              {ROLE_LABELS[r]}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <Badge variant="secondary">
-                        {roleOf(p.id) ? ROLE_LABELS[roleOf(p.id) as AppRole] : "No role"}
-                      </Badge>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
+              {data.profiles.map((p) => {
+                const current = rolesOf(p.id);
+                return (
+                  <TableRow key={p.id}>
+                    <TableCell className="font-medium">{p.full_name || "—"}</TableCell>
+                    <TableCell>{p.email ?? "—"}</TableCell>
+                    <TableCell>
+                      {can("manageUsers") ? (
+                        <div className="flex flex-wrap gap-3">
+                          {(Object.keys(ROLE_LABELS) as AppRole[]).map((r) => {
+                            const enabled = current.includes(r);
+                            return (
+                              <label
+                                key={r}
+                                className="flex cursor-pointer items-center gap-2 text-sm"
+                              >
+                                <Checkbox
+                                  checked={enabled}
+                                  disabled={toggleRole.isPending}
+                                  onCheckedChange={(v) =>
+                                    toggleRole.mutate({
+                                      userId: p.id,
+                                      role: r,
+                                      enabled: v === true,
+                                    })
+                                  }
+                                />
+                                {ROLE_LABELS[r]}
+                              </label>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="flex flex-wrap gap-1">
+                          {current.length === 0 ? (
+                            <Badge variant="secondary">No role</Badge>
+                          ) : (
+                            current.map((r) => (
+                              <Badge key={r} variant="secondary">
+                                {ROLE_LABELS[r]}
+                              </Badge>
+                            ))
+                          )}
+                        </div>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
           {!can("manageUsers") && (
@@ -128,6 +158,7 @@ function Settings() {
           )}
         </CardContent>
       </Card>
+
 
       <Card>
         <CardHeader>
