@@ -1,6 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { toast } from "sonner";
+import { UserPlus } from "lucide-react";
+import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +11,23 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -18,6 +38,8 @@ import {
 } from "@/components/ui/table";
 import { ROLE_LABELS, useAuth, type AppRole } from "@/lib/auth";
 import { audit } from "@/lib/data";
+import { adminCreateUser } from "@/lib/admin-users.functions";
+
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
@@ -29,9 +51,45 @@ export const Route = createFileRoute("/_authenticated/settings")({
   component: Settings,
 });
 
+const emptyNewUser = {
+  fullName: "",
+  email: "",
+  password: "",
+  role: "production_operator" as AppRole,
+};
+
+const newUserSchema = z.object({
+  fullName: z.string().trim().min(2, "Full name is required").max(100),
+  email: z.string().trim().email("Enter a valid email").max(255),
+  password: z.string().min(8, "Password must be at least 8 characters").max(72),
+});
+
 function Settings() {
   const queryClient = useQueryClient();
   const { can, refreshRoles } = useAuth();
+  const [newUserOpen, setNewUserOpen] = useState(false);
+  const [newUser, setNewUser] = useState(emptyNewUser);
+
+  const createUser = useMutation({
+    mutationFn: async () => {
+      const parsed = newUserSchema.parse(newUser);
+      const result = await adminCreateUser({ data: { ...parsed, role: newUser.role } });
+      await audit("create_user", "auth.users", result.id, null, {
+        email: parsed.email,
+        role: newUser.role,
+      });
+    },
+    onSuccess: () => {
+      toast.success("User account created");
+      setNewUserOpen(false);
+      setNewUser(emptyNewUser);
+      queryClient.invalidateQueries({ queryKey: ["users-roles"] });
+    },
+    onError: (err) =>
+      toast.error(err instanceof z.ZodError ? err.issues[0].message : (err as Error).message),
+  });
+
+
 
   const { data, isLoading } = useQuery({
     queryKey: ["users-roles"],
@@ -84,13 +142,84 @@ function Settings() {
 
   return (
     <div>
-      <PageHeader title="Settings" description="Users, roles and audit trail." />
+      <PageHeader
+        title="Settings"
+        description="Users, roles and audit trail."
+        actions={
+          can("manageUsers") && (
+            <Dialog open={newUserOpen} onOpenChange={setNewUserOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <UserPlus className="mr-2 h-4 w-4" /> Create user
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create user account</DialogTitle>
+                </DialogHeader>
+                <div className="grid gap-4">
+                  <div className="space-y-2">
+                    <Label>Full name</Label>
+                    <Input
+                      value={newUser.fullName}
+                      onChange={(e) => setNewUser((u) => ({ ...u, fullName: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Work email</Label>
+                    <Input
+                      type="email"
+                      value={newUser.email}
+                      onChange={(e) => setNewUser((u) => ({ ...u, email: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Temporary password</Label>
+                    <Input
+                      type="text"
+                      value={newUser.password}
+                      onChange={(e) => setNewUser((u) => ({ ...u, password: e.target.value }))}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      At least 8 characters. Share it securely with the user.
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Role</Label>
+                    <Select
+                      value={newUser.role}
+                      onValueChange={(v) => setNewUser((u) => ({ ...u, role: v as AppRole }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(Object.keys(ROLE_LABELS) as AppRole[]).map((r) => (
+                          <SelectItem key={r} value={r}>
+                            {ROLE_LABELS[r]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button onClick={() => createUser.mutate()} disabled={createUser.isPending}>
+                    Create account
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )
+        }
+      />
 
       <Card className="mb-4">
         <CardHeader>
           <CardTitle className="text-base">Users & roles</CardTitle>
         </CardHeader>
         <CardContent>
+
           <Table>
             <TableHeader>
               <TableRow>

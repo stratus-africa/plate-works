@@ -7,7 +7,6 @@ import { ArrowRight, CheckCircle2, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/lib/auth";
 import screenPrinting from "@/assets/screen-printing.jpg";
 
@@ -26,7 +25,6 @@ export const Route = createFileRoute("/auth")({
 const credsSchema = z.object({
   email: z.string().trim().email("Enter a valid email").max(255),
   password: z.string().min(8, "Password must be at least 8 characters").max(72),
-  fullName: z.string().trim().max(100).optional(),
 });
 
 function AuthPage() {
@@ -35,36 +33,22 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
 
   useEffect(() => {
     if (session) navigate({ to: "/dashboard", replace: true });
   }, [session, navigate]);
 
-  const submit = async (mode: "signin" | "signup") => {
-    const parsed = credsSchema.safeParse({ email, password, fullName });
+  const submit = async () => {
+    const parsed = credsSchema.safeParse({ email, password });
     if (!parsed.success) {
       toast.error(parsed.error.issues[0].message);
       return;
     }
     setLoading(true);
     try {
-      if (mode === "signin") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        toast.success("Welcome back");
-      } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: window.location.origin,
-            data: { full_name: fullName },
-          },
-        });
-        if (error) throw error;
-        toast.success("Account created. You can sign in now.");
-      }
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      toast.success("Welcome back");
       navigate({ to: "/dashboard", replace: true });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Authentication failed");
@@ -72,6 +56,7 @@ function AuthPage() {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="grid min-h-screen bg-background lg:grid-cols-[1.1fr_1fr]">
@@ -136,86 +121,48 @@ function AuthPage() {
             </span>
           </div>
 
-          <Tabs defaultValue="signin">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign in</TabsTrigger>
-              <TabsTrigger value="signup">Create account</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="signin" className="space-y-5 pt-8">
-              <div>
-                <h1 className="font-display text-2xl font-semibold">Sign in to your workspace</h1>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Enter your work email and password below.
-                </p>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Work email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@company.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-              <Button className="w-full" disabled={loading} onClick={() => submit("signin")}>
-                Sign in
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </TabsContent>
-
-            <TabsContent value="signup" className="space-y-5 pt-8">
-              <div>
-                <h1 className="font-display text-2xl font-semibold">Create your account</h1>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Join the production floor in under a minute.
-                </p>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="name">Full name</Label>
-                <Input id="name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email2">Work email</Label>
-                <Input
-                  id="email2"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password2">Password</Label>
-                <Input
-                  id="password2"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                The first account created becomes the Administrator. Later accounts start as
-                Production Operator and can be promoted from Settings.
+          <div className="space-y-5">
+            <div>
+              <h1 className="font-display text-2xl font-semibold">Sign in to your workspace</h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Enter your work email and password below.
               </p>
-              <Button className="w-full" disabled={loading} onClick={() => submit("signup")}>
-                Create account
-              </Button>
-            </TabsContent>
-          </Tabs>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Work email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@company.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") void submit();
+                }}
+              />
+            </div>
+            <Button className="w-full" disabled={loading} onClick={() => submit()}>
+              Sign in
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+            <p className="text-center text-xs text-muted-foreground">
+              Accounts are issued by your administrator. Contact them if you need access.
+            </p>
+          </div>
         </div>
       </div>
     </div>
   );
 }
+
 
