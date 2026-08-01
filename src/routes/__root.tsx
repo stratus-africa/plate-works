@@ -79,14 +79,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "PlateWorks — Plate Printing Production Management" },
+      { title: "PlateWorks — Plate Printing Production Management System" },
       {
         name: "description",
         content:
-          "ERP for printing plate inventory, job optimisation, offcut reuse and production reporting.",
+          "Track every printing plate from receipt to consumption: batch intake, plate optimisation, offcut reuse, waste analytics and production reporting.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:title", content: "PlateWorks — Plate Printing Production Management System" },
+      { name: "twitter:title", content: "PlateWorks — Plate Printing Production Management System" },
+      { property: "og:description", content: "Track every printing plate from receipt to consumption: batch intake, plate optimisation, offcut reuse, waste analytics and production reporting." },
+      { name: "twitter:description", content: "Track every printing plate from receipt to consumption: batch intake, plate optimisation, offcut reuse, waste analytics and production reporting." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/fe0f0ae6-2443-40b4-881c-490d326bcd28/id-preview-736bcb2f--9fea6a5c-54ff-46a6-a274-5c7c1ac93958.lovable.app-1785574135244.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/fe0f0ae6-2443-40b4-881c-490d326bcd28/id-preview-736bcb2f--9fea6a5c-54ff-46a6-a274-5c7c1ac93958.lovable.app-1785574135244.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

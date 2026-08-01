@@ -12,11 +12,11 @@ export const Route = createFileRoute("/")({
         content:
           "Track every printing plate from receipt to consumption: batch intake, plate optimisation, offcut reuse, waste analytics and production reporting.",
       },
-      { property: "og:title", content: "PlateWorks — Plate Printing Production Management" },
+      { property: "og:title", content: "PlateWorks — Plate Printing Production Management System" },
       {
         property: "og:description",
         content:
-          "Plate inventory, cutting optimisation, offcut reuse and production reporting in one ERP dashboard.",
+          "Track every printing plate from receipt to consumption: batch intake, plate optimisation, offcut reuse, waste analytics and production reporting.",
       },
     ],
   }),
