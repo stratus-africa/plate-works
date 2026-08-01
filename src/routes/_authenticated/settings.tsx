@@ -84,13 +84,84 @@ function Settings() {
 
   return (
     <div>
-      <PageHeader title="Settings" description="Users, roles and audit trail." />
+      <PageHeader
+        title="Settings"
+        description="Users, roles and audit trail."
+        actions={
+          can("manageUsers") && (
+            <Dialog open={newUserOpen} onOpenChange={setNewUserOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <UserPlus className="mr-2 h-4 w-4" /> Create user
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Create user account</DialogTitle>
+                </DialogHeader>
+                <div className="grid gap-4">
+                  <div className="space-y-2">
+                    <Label>Full name</Label>
+                    <Input
+                      value={newUser.fullName}
+                      onChange={(e) => setNewUser((u) => ({ ...u, fullName: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Work email</Label>
+                    <Input
+                      type="email"
+                      value={newUser.email}
+                      onChange={(e) => setNewUser((u) => ({ ...u, email: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Temporary password</Label>
+                    <Input
+                      type="text"
+                      value={newUser.password}
+                      onChange={(e) => setNewUser((u) => ({ ...u, password: e.target.value }))}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      At least 8 characters. Share it securely with the user.
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Role</Label>
+                    <Select
+                      value={newUser.role}
+                      onValueChange={(v) => setNewUser((u) => ({ ...u, role: v as AppRole }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(Object.keys(ROLE_LABELS) as AppRole[]).map((r) => (
+                          <SelectItem key={r} value={r}>
+                            {ROLE_LABELS[r]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button onClick={() => createUser.mutate()} disabled={createUser.isPending}>
+                    Create account
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )
+        }
+      />
 
       <Card className="mb-4">
         <CardHeader>
           <CardTitle className="text-base">Users & roles</CardTitle>
         </CardHeader>
         <CardContent>
+
           <Table>
             <TableHeader>
               <TableRow>
