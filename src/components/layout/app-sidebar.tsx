@@ -13,6 +13,7 @@ import {
   ScanLine,
   ArrowRightLeft,
   ShieldCheck,
+  Truck,
 } from "lucide-react";
 import {
   Sidebar,
