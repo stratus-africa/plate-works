@@ -74,6 +74,12 @@ function NewJob() {
     due_date: "",
   });
 
+  const { data: machines } = useMachines();
+  const [machineId, setMachineId] = useState("");
+  const machine =
+    (machines ?? []).find((m) => m.id === machineId) ?? defaultMachine(machines);
+  const clampMargin = machine.clampMargin;
+
   const { data: customers } = useQuery({
     queryKey: ["customers-select"],
     queryFn: async () => (await supabase.from("customers").select("id,company").order("company")).data ?? [],
@@ -96,8 +102,16 @@ function NewJob() {
     Number(form.artwork_height || 0) + Number(form.margin_top || 0) + Number(form.margin_bottom || 0);
 
   const opt = useMemo(
-    () => optimizeJob(effWidth, effHeight, Number(form.quantity || 1)),
-    [effWidth, effHeight, form.quantity],
+    () =>
+      optimizeJob(
+        effWidth,
+        effHeight,
+        Number(form.quantity || 1),
+        MASTER_PLATE_WIDTH,
+        MASTER_PLATE_HEIGHT,
+        clampMargin,
+      ),
+    [effWidth, effHeight, form.quantity, clampMargin],
   );
 
   const suitableOffcut = useMemo(
@@ -106,9 +120,11 @@ function NewJob() {
         (offcuts ?? []).map((o) => ({ ...o, area: Number(o.area ?? 0) })),
         effWidth,
         effHeight,
+        clampMargin,
       ),
-    [offcuts, effWidth, effHeight],
+    [offcuts, effWidth, effHeight, clampMargin],
   );
+
 
   const create = useMutation({
     mutationFn: async () => {
