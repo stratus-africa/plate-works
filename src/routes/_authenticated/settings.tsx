@@ -300,6 +300,8 @@ function Settings() {
         </CardContent>
       </Card>
 
+      <MachineSettings editable={can("manageUsers")} />
+
 
       <Card>
         <CardHeader>
