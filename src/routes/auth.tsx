@@ -26,7 +26,6 @@ export const Route = createFileRoute("/auth")({
 const credsSchema = z.object({
   email: z.string().trim().email("Enter a valid email").max(255),
   password: z.string().min(8, "Password must be at least 8 characters").max(72),
-  fullName: z.string().trim().max(100).optional(),
 });
 
 function AuthPage() {
@@ -35,36 +34,22 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
 
   useEffect(() => {
     if (session) navigate({ to: "/dashboard", replace: true });
   }, [session, navigate]);
 
-  const submit = async (mode: "signin" | "signup") => {
-    const parsed = credsSchema.safeParse({ email, password, fullName });
+  const submit = async () => {
+    const parsed = credsSchema.safeParse({ email, password });
     if (!parsed.success) {
       toast.error(parsed.error.issues[0].message);
       return;
     }
     setLoading(true);
     try {
-      if (mode === "signin") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        toast.success("Welcome back");
-      } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: window.location.origin,
-            data: { full_name: fullName },
-          },
-        });
-        if (error) throw error;
-        toast.success("Account created. You can sign in now.");
-      }
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      toast.success("Welcome back");
       navigate({ to: "/dashboard", replace: true });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Authentication failed");
@@ -72,6 +57,7 @@ function AuthPage() {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="grid min-h-screen bg-background lg:grid-cols-[1.1fr_1fr]">
