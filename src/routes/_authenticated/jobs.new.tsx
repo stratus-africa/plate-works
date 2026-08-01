@@ -143,7 +143,10 @@ function NewJob() {
           rotated: opt.rotated,
           utilization: Number(opt.utilization.toFixed(2)),
           waste_area: Number(opt.totalWasteArea.toFixed(2)),
+          machine_name: machine.name,
+          clamp_margin: clampMargin,
         })
+
         .select()
         .single();
       if (error) throw error;
