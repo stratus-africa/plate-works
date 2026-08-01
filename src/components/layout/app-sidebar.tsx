@@ -49,6 +49,7 @@ const groups = [
     items: [
       { title: "Jobs", url: "/jobs", icon: ClipboardList },
       { title: "Customers", url: "/customers", icon: Users },
+      { title: "Suppliers", url: "/suppliers", icon: Truck },
     ],
   },
   {
