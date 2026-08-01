@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CuttingLayoutPreview } from "@/components/cutting-layout-preview";
-import { buildLayout, MASTER_PLATE_HEIGHT, MASTER_PLATE_WIDTH } from "@/lib/optimizer";
+import { CLAMP_MARGIN, buildLayout, MASTER_PLATE_HEIGHT, MASTER_PLATE_WIDTH } from "@/lib/optimizer";
 import { recommendLayout, type LayoutAdvice } from "@/lib/ai-layout.functions";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +18,7 @@ interface Props {
   product?: string;
   plateWidth?: number;
   plateHeight?: number;
+  clampMargin?: number;
 }
 
 /** Side-by-side orientation comparison with an AI-written recommendation. */
@@ -28,12 +29,13 @@ export function AiLayoutRecommendation({
   product = "",
   plateWidth = MASTER_PLATE_WIDTH,
   plateHeight = MASTER_PLATE_HEIGHT,
+  clampMargin = CLAMP_MARGIN,
 }: Props) {
   const qty = Math.max(1, Math.floor(quantity || 1));
   const [preview, setPreview] = useState<"Portrait (0°)" | "Rotated (90°)">("Portrait (0°)");
 
-  const normal = buildLayout(effectiveWidth, effectiveHeight, plateWidth, plateHeight, false);
-  const turned = buildLayout(effectiveHeight, effectiveWidth, plateWidth, plateHeight, true);
+  const normal = buildLayout(effectiveWidth, effectiveHeight, plateWidth, plateHeight, false, clampMargin);
+  const turned = buildLayout(effectiveHeight, effectiveWidth, plateWidth, plateHeight, true, clampMargin);
 
   const options = [
     { label: "Portrait (0°)" as const, layout: normal },
