@@ -30,11 +30,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  CLAMP_MARGIN,
   MASTER_PLATE_HEIGHT,
   MASTER_PLATE_WIDTH,
   findBestOffcut,
   optimizeJob,
 } from "@/lib/optimizer";
+
 import { audit, logTransaction, notify } from "@/lib/data";
 import { useAuth } from "@/lib/auth";
 
@@ -82,7 +84,8 @@ function JobDetail() {
       if (!job) return;
       const effW = Number(job.effective_width);
       const effH = Number(job.effective_height);
-      const opt = optimizeJob(effW, effH, job.quantity);
+      const clamp = Number(job.clamp_margin ?? CLAMP_MARGIN);
+      const opt = optimizeJob(effW, effH, job.quantity, MASTER_PLATE_WIDTH, MASTER_PLATE_HEIGHT, clamp);
 
       // 1. Search available offcuts BEFORE opening a new plate.
       const { data: offcutRows } = await supabase
@@ -93,6 +96,7 @@ function JobDetail() {
         (offcutRows ?? []).map((o) => ({ ...o, area: Number(o.area ?? 0) })),
         effW,
         effH,
+        clamp,
       );
 
       if (candidate && opt.platesRequired === 1) {
@@ -220,7 +224,8 @@ function JobDetail() {
       if (!job) return;
       const effW = Number(job.effective_width);
       const effH = Number(job.effective_height);
-      const opt = optimizeJob(effW, effH, job.quantity);
+      const clamp = Number(job.clamp_margin ?? CLAMP_MARGIN);
+      const opt = optimizeJob(effW, effH, job.quantity, MASTER_PLATE_WIDTH, MASTER_PLATE_HEIGHT, clamp);
 
       const { data: allocs } = await supabase
         .from("plate_allocations")
@@ -306,7 +311,15 @@ function JobDetail() {
 
   if (isLoading || !job) return <Skeleton className="h-96 w-full" />;
 
-  const opt = optimizeJob(Number(job.effective_width), Number(job.effective_height), job.quantity);
+  const jobClamp = Number(job.clamp_margin ?? CLAMP_MARGIN);
+  const opt = optimizeJob(
+    Number(job.effective_width),
+    Number(job.effective_height),
+    job.quantity,
+    MASTER_PLATE_WIDTH,
+    MASTER_PLATE_HEIGHT,
+    jobClamp,
+  );
 
   return (
     <div>
@@ -399,6 +412,8 @@ function JobDetail() {
           effectiveHeight={Number(job.effective_height)}
           quantity={job.quantity}
           product={job.product}
+          clampMargin={jobClamp}
+
         />
       </div>
 

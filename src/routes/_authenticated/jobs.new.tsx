@@ -20,14 +20,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  CLAMP_MARGIN,
   MASTER_PLATE_HEIGHT,
   MASTER_PLATE_WIDTH,
   findBestOffcut,
   optimizeJob,
 } from "@/lib/optimizer";
+import { defaultMachine, useMachines } from "@/lib/machines";
 import { audit, notify } from "@/lib/data";
 import { useAuth } from "@/lib/auth";
+
 
 export const Route = createFileRoute("/_authenticated/jobs/new")({
   head: () => ({
@@ -73,6 +74,12 @@ function NewJob() {
     due_date: "",
   });
 
+  const { data: machines } = useMachines();
+  const [machineId, setMachineId] = useState("");
+  const machine =
+    (machines ?? []).find((m) => m.id === machineId) ?? defaultMachine(machines);
+  const clampMargin = machine.clampMargin;
+
   const { data: customers } = useQuery({
     queryKey: ["customers-select"],
     queryFn: async () => (await supabase.from("customers").select("id,company").order("company")).data ?? [],
@@ -95,8 +102,16 @@ function NewJob() {
     Number(form.artwork_height || 0) + Number(form.margin_top || 0) + Number(form.margin_bottom || 0);
 
   const opt = useMemo(
-    () => optimizeJob(effWidth, effHeight, Number(form.quantity || 1)),
-    [effWidth, effHeight, form.quantity],
+    () =>
+      optimizeJob(
+        effWidth,
+        effHeight,
+        Number(form.quantity || 1),
+        MASTER_PLATE_WIDTH,
+        MASTER_PLATE_HEIGHT,
+        clampMargin,
+      ),
+    [effWidth, effHeight, form.quantity, clampMargin],
   );
 
   const suitableOffcut = useMemo(
@@ -105,9 +120,11 @@ function NewJob() {
         (offcuts ?? []).map((o) => ({ ...o, area: Number(o.area ?? 0) })),
         effWidth,
         effHeight,
+        clampMargin,
       ),
-    [offcuts, effWidth, effHeight],
+    [offcuts, effWidth, effHeight, clampMargin],
   );
+
 
   const create = useMutation({
     mutationFn: async () => {
@@ -126,7 +143,10 @@ function NewJob() {
           rotated: opt.rotated,
           utilization: Number(opt.utilization.toFixed(2)),
           waste_area: Number(opt.totalWasteArea.toFixed(2)),
+          machine_name: machine.name,
+          clamp_margin: clampMargin,
         })
+
         .select()
         .single();
       if (error) throw error;
@@ -231,6 +251,25 @@ function NewJob() {
                   onChange={(e) => setForm((f) => ({ ...f, due_date: e.target.value }))}
                 />
               </div>
+              <div className="space-y-2">
+                <Label>Machine / printer</Label>
+                <Select value={machine.id} onValueChange={setMachineId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select machine" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(machines ?? []).map((m) => (
+                      <SelectItem key={m.id} value={m.id}>
+                        {m.name} — {m.clampMargin}" clamp
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Clamp margin comes from Settings and is reserved on every edge.
+                </p>
+              </div>
+
             </CardContent>
           </Card>
 
@@ -261,7 +300,7 @@ function NewJob() {
                 <p className="text-sm text-destructive">
                   The effective size does not fit inside the {opt.usableWidth.toFixed(2)}" ×{" "}
                   {opt.usableHeight.toFixed(2)}" nestable area of a 42" × 60" master plate (after the{" "}
-                  {CLAMP_MARGIN}" clamp margin on every edge).
+                  {clampMargin}" clamp margin on every edge).
                 </p>
               )}
             </CardContent>
@@ -276,7 +315,7 @@ function NewJob() {
             <CardContent className="space-y-2 text-sm">
               <Row label="Effective plate size" value={`${effWidth.toFixed(2)}" × ${effHeight.toFixed(2)}"`} strong />
               <Row label="Master plate" value={'42" × 60"'} />
-              <Row label="Clamp margin (per edge)" value={`${CLAMP_MARGIN}"`} />
+              <Row label="Clamp margin (per edge)" value={`${clampMargin}"`} />
               <Row
                 label="Nestable area"
                 value={`${opt.usableWidth.toFixed(2)}" × ${opt.usableHeight.toFixed(2)}"`}
