@@ -413,6 +413,7 @@ export type Database = {
         Row: {
           artwork_height: number
           artwork_width: number
+          clamp_margin: number
           colours: number
           completed_at: string | null
           created_at: string
@@ -423,6 +424,7 @@ export type Database = {
           effective_width: number | null
           id: string
           job_number: string
+          machine_name: string | null
           margin_bottom: number
           margin_left: number
           margin_right: number
@@ -443,6 +445,7 @@ export type Database = {
         Insert: {
           artwork_height: number
           artwork_width: number
+          clamp_margin?: number
           colours?: number
           completed_at?: string | null
           created_at?: string
@@ -453,6 +456,7 @@ export type Database = {
           effective_width?: number | null
           id?: string
           job_number?: string
+          machine_name?: string | null
           margin_bottom?: number
           margin_left?: number
           margin_right?: number
@@ -473,6 +477,7 @@ export type Database = {
         Update: {
           artwork_height?: number
           artwork_width?: number
+          clamp_margin?: number
           colours?: number
           completed_at?: string | null
           created_at?: string
@@ -483,6 +488,7 @@ export type Database = {
           effective_width?: number | null
           id?: string
           job_number?: string
+          machine_name?: string | null
           margin_bottom?: number
           margin_left?: number
           margin_right?: number
