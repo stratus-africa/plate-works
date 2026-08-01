@@ -341,3 +341,152 @@ function Settings() {
     </div>
   );
 }
+
+function MachineSettings({ editable }: { editable: boolean }) {
+  const queryClient = useQueryClient();
+  const { data: machines, isLoading } = useMachines();
+  const [draft, setDraft] = useState<Machine[] | null>(null);
+  const rows = draft ?? machines ?? [];
+
+  const save = useMutation({
+    mutationFn: async (next: Machine[]) => {
+      const invalid = next.find((m) => !m.name.trim() || !(m.clampMargin >= 0) || m.clampMargin > 12);
+      if (invalid) throw new Error("Each machine needs a name and a clamp margin between 0\" and 12\".");
+      await saveMachines(next);
+      await audit("update_machines", "settings", "machines", machines ?? null, next);
+    },
+    onSuccess: (_d, next) => {
+      toast.success("Machine settings saved");
+      setDraft(null);
+      queryClient.setQueryData(["machines"], next);
+      queryClient.invalidateQueries({ queryKey: ["machines"] });
+    },
+    onError: (err) => toast.error((err as Error).message),
+  });
+
+  const update = (id: string, patch: Partial<Machine>) =>
+    setDraft(rows.map((m) => (m.id === id ? { ...m, ...patch } : m)));
+
+  const makeDefault = (id: string) =>
+    setDraft(rows.map((m) => ({ ...m, isDefault: m.id === id })));
+
+  const add = () =>
+    setDraft([
+      ...rows,
+      {
+        id: `machine-${Date.now()}`,
+        name: "",
+        clampMargin: 1.5,
+        isDefault: rows.length === 0,
+      },
+    ]);
+
+  const remove = (id: string) => {
+    const next = rows.filter((m) => m.id !== id);
+    if (next.length && !next.some((m) => m.isDefault)) next[0] = { ...next[0], isDefault: true };
+    setDraft(next);
+  };
+
+  return (
+    <Card className="mb-4">
+      <CardHeader>
+        <CardTitle className="text-base">Machines & clamp margins</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="mb-4 text-sm text-muted-foreground">
+          The clamp margin is the reserved band on every edge of a plate or offcut that the press
+          grips. It is excluded from all new nesting calculations and never recovered as a reusable
+          offcut. The default machine is used when a job does not specify one.
+        </p>
+
+        {isLoading ? (
+          <Skeleton className="h-32 w-full" />
+        ) : (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Machine / printer</TableHead>
+                  <TableHead className="w-48">Clamp margin (in, per edge)</TableHead>
+                  <TableHead className="w-28">Default</TableHead>
+                  {editable && <TableHead className="w-16" />}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {rows.map((m) => (
+                  <TableRow key={m.id}>
+                    <TableCell>
+                      {editable ? (
+                        <Input
+                          value={m.name}
+                          placeholder="e.g. Press 1 — Rotary"
+                          onChange={(e) => update(m.id, { name: e.target.value })}
+                        />
+                      ) : (
+                        <span className="font-medium">{m.name}</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editable ? (
+                        <Input
+                          type="number"
+                          step="0.25"
+                          min="0"
+                          max="12"
+                          value={String(m.clampMargin)}
+                          onChange={(e) => update(m.id, { clampMargin: Number(e.target.value) })}
+                        />
+                      ) : (
+                        <span className="numeric">{m.clampMargin}"</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editable ? (
+                        <Checkbox
+                          checked={m.isDefault === true}
+                          onCheckedChange={(v) => v === true && makeDefault(m.id)}
+                        />
+                      ) : m.isDefault ? (
+                        <Badge variant="secondary">Default</Badge>
+                      ) : (
+                        "—"
+                      )}
+                    </TableCell>
+                    {editable && (
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          disabled={rows.length === 1}
+                          onClick={() => remove(m.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    )}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+
+        {editable && (
+          <div className="mt-4 flex items-center gap-2">
+            <Button variant="outline" onClick={add}>
+              <Plus className="mr-2 h-4 w-4" /> Add machine
+            </Button>
+            <Button disabled={!draft || save.isPending} onClick={() => draft && save.mutate(draft)}>
+              {save.isPending ? "Saving…" : "Save changes"}
+            </Button>
+            {draft && (
+              <Button variant="ghost" onClick={() => setDraft(null)}>
+                Cancel
+              </Button>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
