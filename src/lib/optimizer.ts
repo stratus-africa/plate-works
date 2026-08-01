@@ -13,6 +13,13 @@
 export const MASTER_PLATE_WIDTH = 42;
 export const MASTER_PLATE_HEIGHT = 60;
 
+/**
+ * Reserved edge band (inches) on every side of a plate or offcut that the press
+ * clamps onto. No artwork may be nested inside this band, and it is never
+ * recovered as a reusable offcut.
+ */
+export const CLAMP_MARGIN = 1.5;
+
 export interface Placement {
   x: number;
   y: number;
