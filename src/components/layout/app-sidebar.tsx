@@ -5,6 +5,7 @@ import {
   Layers,
   Scissors,
   ClipboardList,
+  ScissorsLineDashed,
   Users,
   BarChart3,
   Settings,
@@ -43,12 +44,12 @@ const groups = [
       { title: "Scan & Consume", url: "/scan", icon: ScanLine },
       { title: "Transfers", url: "/inventory/transfer", icon: ArrowRightLeft },
     ],
-
   },
   {
     label: "Production",
     items: [
       { title: "Jobs", url: "/jobs", icon: ClipboardList },
+      { title: "Work Ticket Optimiser", url: "/work-ticket", icon: ScissorsLineDashed },
       { title: "Customers", url: "/customers", icon: Users },
       { title: "Suppliers", url: "/suppliers", icon: Truck },
     ],
@@ -60,7 +61,6 @@ const groups = [
       { title: "Notifications", url: "/notifications", icon: Bell },
       { title: "Roles & Access", url: "/roles", icon: ShieldCheck },
       { title: "Settings", url: "/settings", icon: Settings },
-
     ],
   },
 ];
