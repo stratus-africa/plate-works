@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { optimiseWorkTicket, type WorkTicketJob } from "@/lib/work-ticket-optimizer";
 
-export const Route = createFileRoute("/_authenticated/work-ticket")({
+export const Route = createFileRoute("/work-ticket/work-ticket")({
   head: () => ({ meta: [{ title: "Work Ticket Optimiser — PlateWorks" }] }),
   component: WorkTicket,
 });

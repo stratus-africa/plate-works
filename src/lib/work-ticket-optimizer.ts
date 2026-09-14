@@ -1,11 +1,15 @@
 export interface WorkTicketJob {
   id: string;
-  jobNumber: string;
+  workTicketId: string;
+  workTicketNumber: string;
+  sourceRowNumber?: number;
   itemName: string;
   description: string;
   length: number;
   width: number;
   quantity: number;
+  completedQuantity?: number;
+  remainingQuantity?: number;
 }
 
 export interface JobRecommendation {
@@ -23,7 +27,8 @@ export interface JobRecommendation {
 
 export interface PlatePlacement {
   jobId: string;
-  jobNumber: string;
+  workTicketId: string;
+  workTicketNumber: string;
   itemName: string;
   x: number;
   y: number;
@@ -47,73 +52,77 @@ export interface PlateOptimisationResult {
   recommendations: JobRecommendation[];
   plates: PlatePlan[];
   selectedArea: number;
-  plateArea: number;
+  totalPlateArea: number;
   wastage: number;
   utilisation: number;
   unallocatedQuantity: number;
 }
 
-function countFit(plateLength: number, plateWidth: number, pieceLength: number, pieceWidth: number) {
-  if (pieceLength <= 0 || pieceWidth <= 0) return { count: 0, orientation: "normal" as const };
-  const normal = Math.floor(plateLength / pieceLength) * Math.floor(plateWidth / pieceWidth);
-  const rotated = Math.floor(plateLength / pieceWidth) * Math.floor(plateWidth / pieceLength);
+function fitCount(plateLength: number, plateWidth: number, length: number, width: number) {
+  if (length <= 0 || width <= 0) return { count: 0, orientation: "normal" as const };
+  const normal = Math.floor(plateLength / length) * Math.floor(plateWidth / width);
+  const rotated = Math.floor(plateLength / width) * Math.floor(plateWidth / length);
   return rotated > normal
     ? { count: rotated, orientation: "rotated" as const }
     : { count: normal, orientation: "normal" as const };
 }
 
-export function recommendJobs(jobs: WorkTicketJob[], plateLength: number, plateWidth: number): JobRecommendation[] {
-  return jobs.map((job) => {
-    const normalCount = countFit(plateLength, plateWidth, job.length, job.width);
-    const rotatedCount = countFit(plateLength, plateWidth, job.width, job.length);
-    const chosen = normalCount.count >= rotatedCount.count ? normalCount : rotatedCount;
+export function recommendJobs(jobs: WorkTicketJob[], plateLength: number, plateWidth: number) {
+  return jobs.map((job): JobRecommendation => {
+    const normal = fitCount(plateLength, plateWidth, job.length, job.width);
+    const rotated = fitCount(plateLength, plateWidth, job.width, job.length);
+    const chosen = normal.count >= rotated.count ? normal : rotated;
     const pieceLength = chosen.orientation === "rotated" ? job.width : job.length;
     const pieceWidth = chosen.orientation === "rotated" ? job.length : job.width;
-    const maxByArea = Math.floor((plateLength * plateWidth) / (job.length * job.width));
-    const recommendedQuantity = Math.min(job.quantity, chosen.count, maxByArea);
+    const areaEach = job.length * job.width;
+    const available = Math.max(0, job.remainingQuantity ?? job.quantity);
+    const maxByArea = areaEach > 0 ? Math.floor((plateLength * plateWidth) / areaEach) : 0;
+    const recommendedQuantity = Math.min(available, chosen.count, maxByArea);
+
     return {
       job,
       orientation: chosen.orientation,
       pieceLength,
       pieceWidth,
-      areaEach: job.length * job.width,
-      requestedQuantity: job.quantity,
+      areaEach,
+      requestedQuantity: available,
       recommendedQuantity,
-      totalArea: recommendedQuantity * job.length * job.width,
+      totalArea: recommendedQuantity * areaEach,
       fits: chosen.count > 0,
-      reason: chosen.count === 0 ? `Job ${job.length} × ${job.width} does not fit on this plate.` : undefined,
+      reason:
+        chosen.count === 0 ? `Job ${job.length} × ${job.width} does not physically fit on this plate.` : undefined,
     };
   });
 }
 
-function bestCombination(recommendations: JobRecommendation[], plateArea: number) {
-  // Greedy first-fit by area, then try a small swap pass. This is deterministic,
-  // fast for large work tickets, and respects the physical plate dimensions below.
-  const sorted = [...recommendations]
+function chooseCombination(recommendations: JobRecommendation[], plateArea: number) {
+  const candidates = [...recommendations]
     .filter((r) => r.fits && r.recommendedQuantity > 0)
     .sort((a, b) => b.areaEach - a.areaEach);
 
-  const chosen = new Map<string, number>();
-  let remaining = plateArea;
-  for (const rec of sorted) {
-    const qty = Math.min(rec.recommendedQuantity, Math.floor(remaining / rec.areaEach));
+  const selected = new Map<string, number>();
+  let remainingArea = plateArea;
+
+  // First pass: largest jobs first.
+  for (const rec of candidates) {
+    const qty = Math.min(rec.recommendedQuantity, Math.floor(remainingArea / rec.areaEach));
     if (qty > 0) {
-      chosen.set(rec.job.id, qty);
-      remaining -= qty * rec.areaEach;
+      selected.set(rec.job.id, qty);
+      remainingArea -= qty * rec.areaEach;
     }
   }
 
-  // Fill remaining space with smaller jobs that were skipped by the greedy pass.
-  for (const rec of [...sorted].sort((a, b) => a.areaEach - b.areaEach)) {
-    const already = chosen.get(rec.job.id) ?? 0;
-    const room = Math.floor(remaining / rec.areaEach);
-    const extra = Math.min(room, rec.recommendedQuantity - already);
+  // Second pass: smallest jobs fill gaps left by the first pass.
+  for (const rec of [...candidates].sort((a, b) => a.areaEach - b.areaEach)) {
+    const current = selected.get(rec.job.id) ?? 0;
+    const extra = Math.min(rec.recommendedQuantity - current, Math.floor(remainingArea / rec.areaEach));
     if (extra > 0) {
-      chosen.set(rec.job.id, already + extra);
-      remaining -= extra * rec.areaEach;
+      selected.set(rec.job.id, current + extra);
+      remainingArea -= extra * rec.areaEach;
     }
   }
-  return chosen;
+
+  return selected;
 }
 
 export function optimiseWorkTicket(
@@ -128,57 +137,58 @@ export function optimiseWorkTicket(
       recommendations,
       plates: [],
       selectedArea: 0,
-      plateArea: 0,
+      totalPlateArea: 0,
       wastage: 0,
       utilisation: 0,
-      unallocatedQuantity: jobs.reduce((n, j) => n + j.quantity, 0),
+      unallocatedQuantity: jobs.reduce((n, j) => n + (j.remainingQuantity ?? j.quantity), 0),
     };
   }
 
-  const remaining = new Map(jobs.map((j) => [j.id, j.quantity]));
+  const remaining = new Map(jobs.map((j) => [j.id, Math.max(0, j.remainingQuantity ?? j.quantity)]));
   const plates: PlatePlan[] = [];
   let plateNumber = 1;
 
   while ([...remaining.values()].some((q) => q > 0)) {
-    const availableJobs = recommendations.map((r) => ({
+    const available = recommendations.map((r) => ({
       ...r,
       recommendedQuantity: Math.min(r.recommendedQuantity, remaining.get(r.job.id) ?? 0),
     }));
-    const combination = bestCombination(availableJobs, plateArea);
+    const combination = chooseCombination(available, plateArea);
     if (combination.size === 0) break;
 
     const placements: PlatePlacement[] = [];
     const occupied: Array<{ x: number; y: number; length: number; width: number }> = [];
+    const canPlace = (x: number, y: number, length: number, width: number) =>
+      x + length <= plateLength + 1e-9 &&
+      y + width <= plateWidth + 1e-9 &&
+      occupied.every((p) => x + length <= p.x || p.x + p.length <= x || y + width <= p.y || p.y + p.width <= y);
 
-    const canPlace = (x: number, y: number, length: number, width: number) => {
-      if (x + length > plateLength + 1e-9 || y + width > plateWidth + 1e-9) return false;
-      return occupied.every((p) => x + length <= p.x || p.x + p.length <= x || y + width <= p.y || p.y + p.width <= y);
-    };
-
-    for (const rec of availableJobs) {
+    for (const rec of available) {
       const qty = combination.get(rec.job.id) ?? 0;
       for (let i = 0; i < qty; i++) {
         let placed = false;
-        const candidates = [
-          { length: rec.pieceLength, width: rec.pieceWidth },
-          { length: rec.pieceWidth, width: rec.pieceLength },
-        ];
-        for (const candidate of candidates) {
-          for (
-            let y = 0;
-            y <= plateWidth - candidate.width + 1e-9 && !placed;
-            y += Math.max(0.25, Math.min(candidate.width, 1))
-          ) {
-            for (
-              let x = 0;
-              x <= plateLength - candidate.length + 1e-9 && !placed;
-              x += Math.max(0.25, Math.min(candidate.length, 1))
-            ) {
+        const orientations =
+          rec.orientation === "rotated"
+            ? [
+                { length: rec.pieceLength, width: rec.pieceWidth },
+                { length: rec.pieceWidth, width: rec.pieceLength },
+              ]
+            : [
+                { length: rec.pieceLength, width: rec.pieceWidth },
+                { length: rec.pieceWidth, width: rec.pieceLength },
+              ];
+
+        for (const candidate of orientations) {
+          const stepX = Math.max(0.25, Math.min(candidate.length, 1));
+          const stepY = Math.max(0.25, Math.min(candidate.width, 1));
+          for (let y = 0; y <= plateWidth - candidate.width + 1e-9 && !placed; y += stepY) {
+            for (let x = 0; x <= plateLength - candidate.length + 1e-9 && !placed; x += stepX) {
               if (canPlace(x, y, candidate.length, candidate.width)) {
                 occupied.push({ x, y, ...candidate });
                 placements.push({
                   jobId: rec.job.id,
-                  jobNumber: rec.job.jobNumber,
+                  workTicketId: rec.job.workTicketId,
+                  workTicketNumber: rec.job.workTicketNumber,
                   itemName: rec.job.itemName,
                   x,
                   y,
@@ -196,7 +206,7 @@ export function optimiseWorkTicket(
       }
     }
 
-    if (placements.length === 0) break;
+    if (!placements.length) break;
     const usedArea = placements.reduce((sum, p) => sum + p.length * p.width, 0);
     for (const p of placements) remaining.set(p.jobId, Math.max(0, (remaining.get(p.jobId) ?? 0) - 1));
     plates.push({
@@ -209,7 +219,7 @@ export function optimiseWorkTicket(
       utilisation: (usedArea / plateArea) * 100,
       placements,
     });
-    plateNumber++;
+    plateNumber += 1;
   }
 
   const selectedArea = plates.reduce((sum, p) => sum + p.usedArea, 0);
@@ -218,7 +228,7 @@ export function optimiseWorkTicket(
     recommendations,
     plates,
     selectedArea,
-    plateArea: totalPlateArea,
+    totalPlateArea,
     wastage: Math.max(0, totalPlateArea - selectedArea),
     utilisation: totalPlateArea ? (selectedArea / totalPlateArea) * 100 : 0,
     unallocatedQuantity: [...remaining.values()].reduce((a, b) => a + b, 0),
