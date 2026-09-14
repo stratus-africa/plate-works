@@ -13,6 +13,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedWorkTicketRouteImport } from './routes/_authenticated/work-ticket'
 import { Route as AuthenticatedSuppliersRouteImport } from './routes/_authenticated/suppliers'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedScanRouteImport } from './routes/_authenticated/scan'
@@ -48,6 +49,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedWorkTicketRoute = AuthenticatedWorkTicketRouteImport.update({
+  id: '/work-ticket',
+  path: '/work-ticket',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSuppliersRoute = AuthenticatedSuppliersRouteImport.update({
   id: '/suppliers',
@@ -148,6 +154,7 @@ export interface FileRoutesByFullPath {
   '/scan': typeof AuthenticatedScanRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/suppliers': typeof AuthenticatedSuppliersRoute
+  '/work-ticket': typeof AuthenticatedWorkTicketRoute
   '/inventory/receive': typeof AuthenticatedInventoryReceiveRoute
   '/inventory/transfer': typeof AuthenticatedInventoryTransferRoute
   '/jobs/$jobId': typeof AuthenticatedJobsJobIdRoute
@@ -169,6 +176,7 @@ export interface FileRoutesByTo {
   '/scan': typeof AuthenticatedScanRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/suppliers': typeof AuthenticatedSuppliersRoute
+  '/work-ticket': typeof AuthenticatedWorkTicketRoute
   '/inventory/receive': typeof AuthenticatedInventoryReceiveRoute
   '/inventory/transfer': typeof AuthenticatedInventoryTransferRoute
   '/jobs/$jobId': typeof AuthenticatedJobsJobIdRoute
@@ -192,6 +200,7 @@ export interface FileRoutesById {
   '/_authenticated/scan': typeof AuthenticatedScanRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/suppliers': typeof AuthenticatedSuppliersRoute
+  '/_authenticated/work-ticket': typeof AuthenticatedWorkTicketRoute
   '/_authenticated/inventory/receive': typeof AuthenticatedInventoryReceiveRoute
   '/_authenticated/inventory/transfer': typeof AuthenticatedInventoryTransferRoute
   '/_authenticated/jobs/$jobId': typeof AuthenticatedJobsJobIdRoute
@@ -215,6 +224,7 @@ export interface FileRouteTypes {
     | '/scan'
     | '/settings'
     | '/suppliers'
+    | '/work-ticket'
     | '/inventory/receive'
     | '/inventory/transfer'
     | '/jobs/$jobId'
@@ -236,6 +246,7 @@ export interface FileRouteTypes {
     | '/scan'
     | '/settings'
     | '/suppliers'
+    | '/work-ticket'
     | '/inventory/receive'
     | '/inventory/transfer'
     | '/jobs/$jobId'
@@ -258,6 +269,7 @@ export interface FileRouteTypes {
     | '/_authenticated/scan'
     | '/_authenticated/settings'
     | '/_authenticated/suppliers'
+    | '/_authenticated/work-ticket'
     | '/_authenticated/inventory/receive'
     | '/_authenticated/inventory/transfer'
     | '/_authenticated/jobs/$jobId'
@@ -302,6 +314,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/work-ticket': {
+      id: '/_authenticated/work-ticket'
+      path: '/work-ticket'
+      fullPath: '/work-ticket'
+      preLoaderRoute: typeof AuthenticatedWorkTicketRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/suppliers': {
       id: '/_authenticated/suppliers'
@@ -429,6 +448,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedScanRoute: typeof AuthenticatedScanRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedSuppliersRoute: typeof AuthenticatedSuppliersRoute
+  AuthenticatedWorkTicketRoute: typeof AuthenticatedWorkTicketRoute
   AuthenticatedInventoryReceiveRoute: typeof AuthenticatedInventoryReceiveRoute
   AuthenticatedInventoryTransferRoute: typeof AuthenticatedInventoryTransferRoute
   AuthenticatedJobsJobIdRoute: typeof AuthenticatedJobsJobIdRoute
@@ -448,6 +468,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedScanRoute: AuthenticatedScanRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedSuppliersRoute: AuthenticatedSuppliersRoute,
+  AuthenticatedWorkTicketRoute: AuthenticatedWorkTicketRoute,
   AuthenticatedInventoryReceiveRoute: AuthenticatedInventoryReceiveRoute,
   AuthenticatedInventoryTransferRoute: AuthenticatedInventoryTransferRoute,
   AuthenticatedJobsJobIdRoute: AuthenticatedJobsJobIdRoute,
@@ -468,3 +489,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

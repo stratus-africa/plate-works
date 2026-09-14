@@ -5,7 +5,6 @@ import {
   Layers,
   Scissors,
   ClipboardList,
-  ScissorsLineDashed,
   Users,
   BarChart3,
   Settings,
@@ -15,6 +14,7 @@ import {
   ArrowRightLeft,
   ShieldCheck,
   Truck,
+  Settings2,
 } from "lucide-react";
 import {
   Sidebar,
@@ -49,7 +49,7 @@ const groups = [
     label: "Production",
     items: [
       { title: "Jobs", url: "/jobs", icon: ClipboardList },
-      { title: "Work Ticket Optimiser", url: "/work-ticket", icon: ScissorsLineDashed },
+      { title: "Work Ticket Optimiser", url: "/work-ticket", icon: Settings2 },
       { title: "Customers", url: "/customers", icon: Users },
       { title: "Suppliers", url: "/suppliers", icon: Truck },
     ],
