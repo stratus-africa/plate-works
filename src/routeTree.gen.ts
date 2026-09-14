@@ -8,473 +8,449 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as WorkTicketWorkTicketRouteImport } from './routes/work-ticket/work-ticket'
-import { Route as AuthenticatedWorkTicketRouteImport } from './routes/_authenticated/work-ticket'
-import { Route as AuthenticatedSuppliersRouteImport } from './routes/_authenticated/suppliers'
-import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
-import { Route as AuthenticatedScanRouteImport } from './routes/_authenticated/scan'
-import { Route as AuthenticatedRolesRouteImport } from './routes/_authenticated/roles'
-import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
-import { Route as AuthenticatedPlatesRouteImport } from './routes/_authenticated/plates'
-import { Route as AuthenticatedOffcutsRouteImport } from './routes/_authenticated/offcuts'
-import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
-import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedCustomersRouteImport } from './routes/_authenticated/customers'
-import { Route as AuthenticatedJobsIndexRouteImport } from './routes/_authenticated/jobs.index'
-import { Route as AuthenticatedInventoryIndexRouteImport } from './routes/_authenticated/inventory.index'
-import { Route as AuthenticatedJobsNewRouteImport } from './routes/_authenticated/jobs.new'
-import { Route as AuthenticatedJobsJobIdRouteImport } from './routes/_authenticated/jobs.$jobId'
-import { Route as AuthenticatedInventoryTransferRouteImport } from './routes/_authenticated/inventory.transfer'
-import { Route as AuthenticatedInventoryReceiveRouteImport } from './routes/_authenticated/inventory.receive'
+import { Route as rootRouteImport } from "./routes/__root";
+import { Route as SitemapDotxmlRouteImport } from "./routes/sitemap[.]xml";
+import { Route as AuthRouteImport } from "./routes/auth";
+import { Route as AuthenticatedRouteRouteImport } from "./routes/_authenticated/route";
+import { Route as IndexRouteImport } from "./routes/index";
+import { Route as AuthenticatedSuppliersRouteImport } from "./routes/_authenticated/suppliers";
+import { Route as AuthenticatedSettingsRouteImport } from "./routes/_authenticated/settings";
+import { Route as AuthenticatedScanRouteImport } from "./routes/_authenticated/scan";
+import { Route as AuthenticatedRolesRouteImport } from "./routes/_authenticated/roles";
+import { Route as AuthenticatedReportsRouteImport } from "./routes/_authenticated/reports";
+import { Route as AuthenticatedPlatesRouteImport } from "./routes/_authenticated/plates";
+import { Route as AuthenticatedOffcutsRouteImport } from "./routes/_authenticated/offcuts";
+import { Route as AuthenticatedNotificationsRouteImport } from "./routes/_authenticated/notifications";
+import { Route as AuthenticatedDashboardRouteImport } from "./routes/_authenticated/dashboard";
+import { Route as AuthenticatedCustomersRouteImport } from "./routes/_authenticated/customers";
+import { Route as AuthenticatedJobsIndexRouteImport } from "./routes/_authenticated/jobs.index";
+import { Route as AuthenticatedInventoryIndexRouteImport } from "./routes/_authenticated/inventory.index";
+import { Route as AuthenticatedJobsNewRouteImport } from "./routes/_authenticated/jobs.new";
+import { Route as AuthenticatedJobsJobIdRouteImport } from "./routes/_authenticated/jobs.$jobId";
+import { Route as AuthenticatedInventoryTransferRouteImport } from "./routes/_authenticated/inventory.transfer";
+import { Route as AuthenticatedInventoryReceiveRouteImport } from "./routes/_authenticated/inventory.receive";
+import { Route as AuthenticatedWorkTicketRouteImport } from "./routes/_authenticated/work-ticket";
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
+  id: "/sitemap.xml",
+  path: "/sitemap.xml",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
+  id: "/auth",
+  path: "/auth",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
+  id: "/_authenticated",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+  id: "/",
+  path: "/",
   getParentRoute: () => rootRouteImport,
-} as any)
-const WorkTicketWorkTicketRoute = WorkTicketWorkTicketRouteImport.update({
-  id: '/work-ticket/work-ticket',
-  path: '/work-ticket/work-ticket',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedWorkTicketRoute = AuthenticatedWorkTicketRouteImport.update({
-  id: '/work-ticket',
-  path: '/work-ticket',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
+} as any);
 const AuthenticatedSuppliersRoute = AuthenticatedSuppliersRouteImport.update({
-  id: '/suppliers',
-  path: '/suppliers',
+  id: "/suppliers",
+  path: "/suppliers",
   getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
+} as any);
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
+  id: "/settings",
+  path: "/settings",
   getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
+} as any);
 const AuthenticatedScanRoute = AuthenticatedScanRouteImport.update({
-  id: '/scan',
-  path: '/scan',
+  id: "/scan",
+  path: "/scan",
   getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
+} as any);
 const AuthenticatedRolesRoute = AuthenticatedRolesRouteImport.update({
-  id: '/roles',
-  path: '/roles',
+  id: "/roles",
+  path: "/roles",
   getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
+} as any);
 const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
+  id: "/reports",
+  path: "/reports",
   getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
+} as any);
 const AuthenticatedPlatesRoute = AuthenticatedPlatesRouteImport.update({
-  id: '/plates',
-  path: '/plates',
+  id: "/plates",
+  path: "/plates",
   getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
+} as any);
 const AuthenticatedOffcutsRoute = AuthenticatedOffcutsRouteImport.update({
-  id: '/offcuts',
-  path: '/offcuts',
+  id: "/offcuts",
+  path: "/offcuts",
   getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedNotificationsRoute =
-  AuthenticatedNotificationsRouteImport.update({
-    id: '/notifications',
-    path: '/notifications',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
+} as any);
+const AuthenticatedNotificationsRoute = AuthenticatedNotificationsRouteImport.update({
+  id: "/notifications",
+  path: "/notifications",
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any);
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+  id: "/dashboard",
+  path: "/dashboard",
   getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
+} as any);
 const AuthenticatedCustomersRoute = AuthenticatedCustomersRouteImport.update({
-  id: '/customers',
-  path: '/customers',
+  id: "/customers",
+  path: "/customers",
   getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
+} as any);
 const AuthenticatedJobsIndexRoute = AuthenticatedJobsIndexRouteImport.update({
-  id: '/jobs/',
-  path: '/jobs/',
+  id: "/jobs/",
+  path: "/jobs/",
   getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedInventoryIndexRoute =
-  AuthenticatedInventoryIndexRouteImport.update({
-    id: '/inventory/',
-    path: '/inventory/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
+} as any);
+const AuthenticatedInventoryIndexRoute = AuthenticatedInventoryIndexRouteImport.update({
+  id: "/inventory/",
+  path: "/inventory/",
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any);
 const AuthenticatedJobsNewRoute = AuthenticatedJobsNewRouteImport.update({
-  id: '/jobs/new',
-  path: '/jobs/new',
+  id: "/jobs/new",
+  path: "/jobs/new",
   getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
+} as any);
 const AuthenticatedJobsJobIdRoute = AuthenticatedJobsJobIdRouteImport.update({
-  id: '/jobs/$jobId',
-  path: '/jobs/$jobId',
+  id: "/jobs/$jobId",
+  path: "/jobs/$jobId",
   getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedInventoryTransferRoute =
-  AuthenticatedInventoryTransferRouteImport.update({
-    id: '/inventory/transfer',
-    path: '/inventory/transfer',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedInventoryReceiveRoute =
-  AuthenticatedInventoryReceiveRouteImport.update({
-    id: '/inventory/receive',
-    path: '/inventory/receive',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
+} as any);
+const AuthenticatedInventoryTransferRoute = AuthenticatedInventoryTransferRouteImport.update({
+  id: "/inventory/transfer",
+  path: "/inventory/transfer",
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any);
+const AuthenticatedWorkTicketRoute = AuthenticatedWorkTicketRouteImport.update({
+  id: "/work-ticket",
+  path: "/work-ticket",
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any);
+const AuthenticatedInventoryReceiveRoute = AuthenticatedInventoryReceiveRouteImport.update({
+  id: "/inventory/receive",
+  path: "/inventory/receive",
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any);
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/customers': typeof AuthenticatedCustomersRoute
-  '/dashboard': typeof AuthenticatedDashboardRoute
-  '/notifications': typeof AuthenticatedNotificationsRoute
-  '/offcuts': typeof AuthenticatedOffcutsRoute
-  '/plates': typeof AuthenticatedPlatesRoute
-  '/reports': typeof AuthenticatedReportsRoute
-  '/roles': typeof AuthenticatedRolesRoute
-  '/scan': typeof AuthenticatedScanRoute
-  '/settings': typeof AuthenticatedSettingsRoute
-  '/suppliers': typeof AuthenticatedSuppliersRoute
-  '/work-ticket': typeof AuthenticatedWorkTicketRoute
-  '/work-ticket/work-ticket': typeof WorkTicketWorkTicketRoute
-  '/inventory/receive': typeof AuthenticatedInventoryReceiveRoute
-  '/inventory/transfer': typeof AuthenticatedInventoryTransferRoute
-  '/jobs/$jobId': typeof AuthenticatedJobsJobIdRoute
-  '/jobs/new': typeof AuthenticatedJobsNewRoute
-  '/inventory/': typeof AuthenticatedInventoryIndexRoute
-  '/jobs/': typeof AuthenticatedJobsIndexRoute
+  "/": typeof IndexRoute;
+  "/auth": typeof AuthRoute;
+  "/sitemap.xml": typeof SitemapDotxmlRoute;
+  "/customers": typeof AuthenticatedCustomersRoute;
+  "/dashboard": typeof AuthenticatedDashboardRoute;
+  "/notifications": typeof AuthenticatedNotificationsRoute;
+  "/offcuts": typeof AuthenticatedOffcutsRoute;
+  "/plates": typeof AuthenticatedPlatesRoute;
+  "/reports": typeof AuthenticatedReportsRoute;
+  "/roles": typeof AuthenticatedRolesRoute;
+  "/scan": typeof AuthenticatedScanRoute;
+  "/settings": typeof AuthenticatedSettingsRoute;
+  "/suppliers": typeof AuthenticatedSuppliersRoute;
+  "/inventory/receive": typeof AuthenticatedInventoryReceiveRoute;
+  "/inventory/transfer": typeof AuthenticatedInventoryTransferRoute;
+  "/jobs/$jobId": typeof AuthenticatedJobsJobIdRoute;
+  "/jobs/new": typeof AuthenticatedJobsNewRoute;
+  "/inventory/": typeof AuthenticatedInventoryIndexRoute;
+  "/jobs/": typeof AuthenticatedJobsIndexRoute;
+  "/work-ticket": typeof AuthenticatedWorkTicketRoute;
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/customers': typeof AuthenticatedCustomersRoute
-  '/dashboard': typeof AuthenticatedDashboardRoute
-  '/notifications': typeof AuthenticatedNotificationsRoute
-  '/offcuts': typeof AuthenticatedOffcutsRoute
-  '/plates': typeof AuthenticatedPlatesRoute
-  '/reports': typeof AuthenticatedReportsRoute
-  '/roles': typeof AuthenticatedRolesRoute
-  '/scan': typeof AuthenticatedScanRoute
-  '/settings': typeof AuthenticatedSettingsRoute
-  '/suppliers': typeof AuthenticatedSuppliersRoute
-  '/work-ticket': typeof AuthenticatedWorkTicketRoute
-  '/work-ticket/work-ticket': typeof WorkTicketWorkTicketRoute
-  '/inventory/receive': typeof AuthenticatedInventoryReceiveRoute
-  '/inventory/transfer': typeof AuthenticatedInventoryTransferRoute
-  '/jobs/$jobId': typeof AuthenticatedJobsJobIdRoute
-  '/jobs/new': typeof AuthenticatedJobsNewRoute
-  '/inventory': typeof AuthenticatedInventoryIndexRoute
-  '/jobs': typeof AuthenticatedJobsIndexRoute
+  "/": typeof IndexRoute;
+  "/auth": typeof AuthRoute;
+  "/sitemap.xml": typeof SitemapDotxmlRoute;
+  "/customers": typeof AuthenticatedCustomersRoute;
+  "/dashboard": typeof AuthenticatedDashboardRoute;
+  "/notifications": typeof AuthenticatedNotificationsRoute;
+  "/offcuts": typeof AuthenticatedOffcutsRoute;
+  "/plates": typeof AuthenticatedPlatesRoute;
+  "/reports": typeof AuthenticatedReportsRoute;
+  "/roles": typeof AuthenticatedRolesRoute;
+  "/scan": typeof AuthenticatedScanRoute;
+  "/settings": typeof AuthenticatedSettingsRoute;
+  "/suppliers": typeof AuthenticatedSuppliersRoute;
+  "/inventory/receive": typeof AuthenticatedInventoryReceiveRoute;
+  "/inventory/transfer": typeof AuthenticatedInventoryTransferRoute;
+  "/jobs/$jobId": typeof AuthenticatedJobsJobIdRoute;
+  "/jobs/new": typeof AuthenticatedJobsNewRoute;
+  "/inventory": typeof AuthenticatedInventoryIndexRoute;
+  "/jobs": typeof AuthenticatedJobsIndexRoute;
+  "/work-ticket": typeof AuthenticatedWorkTicketRoute;
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
-  '/auth': typeof AuthRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/_authenticated/customers': typeof AuthenticatedCustomersRoute
-  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
-  '/_authenticated/offcuts': typeof AuthenticatedOffcutsRoute
-  '/_authenticated/plates': typeof AuthenticatedPlatesRoute
-  '/_authenticated/reports': typeof AuthenticatedReportsRoute
-  '/_authenticated/roles': typeof AuthenticatedRolesRoute
-  '/_authenticated/scan': typeof AuthenticatedScanRoute
-  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
-  '/_authenticated/suppliers': typeof AuthenticatedSuppliersRoute
-  '/_authenticated/work-ticket': typeof AuthenticatedWorkTicketRoute
-  '/work-ticket/work-ticket': typeof WorkTicketWorkTicketRoute
-  '/_authenticated/inventory/receive': typeof AuthenticatedInventoryReceiveRoute
-  '/_authenticated/inventory/transfer': typeof AuthenticatedInventoryTransferRoute
-  '/_authenticated/jobs/$jobId': typeof AuthenticatedJobsJobIdRoute
-  '/_authenticated/jobs/new': typeof AuthenticatedJobsNewRoute
-  '/_authenticated/inventory/': typeof AuthenticatedInventoryIndexRoute
-  '/_authenticated/jobs/': typeof AuthenticatedJobsIndexRoute
+  __root__: typeof rootRouteImport;
+  "/": typeof IndexRoute;
+  "/_authenticated": typeof AuthenticatedRouteRouteWithChildren;
+  "/auth": typeof AuthRoute;
+  "/sitemap.xml": typeof SitemapDotxmlRoute;
+  "/_authenticated/customers": typeof AuthenticatedCustomersRoute;
+  "/_authenticated/dashboard": typeof AuthenticatedDashboardRoute;
+  "/_authenticated/notifications": typeof AuthenticatedNotificationsRoute;
+  "/_authenticated/offcuts": typeof AuthenticatedOffcutsRoute;
+  "/_authenticated/plates": typeof AuthenticatedPlatesRoute;
+  "/_authenticated/reports": typeof AuthenticatedReportsRoute;
+  "/_authenticated/roles": typeof AuthenticatedRolesRoute;
+  "/_authenticated/scan": typeof AuthenticatedScanRoute;
+  "/_authenticated/settings": typeof AuthenticatedSettingsRoute;
+  "/_authenticated/suppliers": typeof AuthenticatedSuppliersRoute;
+  "/_authenticated/inventory/receive": typeof AuthenticatedInventoryReceiveRoute;
+  "/_authenticated/inventory/transfer": typeof AuthenticatedInventoryTransferRoute;
+  "/_authenticated/jobs/$jobId": typeof AuthenticatedJobsJobIdRoute;
+  "/_authenticated/jobs/new": typeof AuthenticatedJobsNewRoute;
+  "/_authenticated/inventory/": typeof AuthenticatedInventoryIndexRoute;
+  "/_authenticated/jobs/": typeof AuthenticatedJobsIndexRoute;
+  "/_authenticated/work-ticket": typeof AuthenticatedWorkTicketRoute;
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
+  fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
-    | '/'
-    | '/auth'
-    | '/sitemap.xml'
-    | '/customers'
-    | '/dashboard'
-    | '/notifications'
-    | '/offcuts'
-    | '/plates'
-    | '/reports'
-    | '/roles'
-    | '/scan'
-    | '/settings'
-    | '/suppliers'
-    | '/work-ticket'
-    | '/work-ticket/work-ticket'
-    | '/inventory/receive'
-    | '/inventory/transfer'
-    | '/jobs/$jobId'
-    | '/jobs/new'
-    | '/inventory/'
-    | '/jobs/'
-  fileRoutesByTo: FileRoutesByTo
+    | "/"
+    | "/auth"
+    | "/sitemap.xml"
+    | "/customers"
+    | "/dashboard"
+    | "/notifications"
+    | "/offcuts"
+    | "/plates"
+    | "/reports"
+    | "/roles"
+    | "/scan"
+    | "/settings"
+    | "/suppliers"
+    | "/inventory/receive"
+    | "/inventory/transfer"
+    | "/jobs/$jobId"
+    | "/jobs/new"
+    | "/inventory/"
+    | "/jobs/"
+    | "/work-ticket";
+  fileRoutesByTo: FileRoutesByTo;
   to:
-    | '/'
-    | '/auth'
-    | '/sitemap.xml'
-    | '/customers'
-    | '/dashboard'
-    | '/notifications'
-    | '/offcuts'
-    | '/plates'
-    | '/reports'
-    | '/roles'
-    | '/scan'
-    | '/settings'
-    | '/suppliers'
-    | '/work-ticket'
-    | '/work-ticket/work-ticket'
-    | '/inventory/receive'
-    | '/inventory/transfer'
-    | '/jobs/$jobId'
-    | '/jobs/new'
-    | '/inventory'
-    | '/jobs'
+    | "/"
+    | "/auth"
+    | "/sitemap.xml"
+    | "/customers"
+    | "/dashboard"
+    | "/notifications"
+    | "/offcuts"
+    | "/plates"
+    | "/reports"
+    | "/roles"
+    | "/scan"
+    | "/settings"
+    | "/suppliers"
+    | "/inventory/receive"
+    | "/inventory/transfer"
+    | "/jobs/$jobId"
+    | "/jobs/new"
+    | "/inventory"
+    | "/jobs"
+    | "/work-ticket";
   id:
-    | '__root__'
-    | '/'
-    | '/_authenticated'
-    | '/auth'
-    | '/sitemap.xml'
-    | '/_authenticated/customers'
-    | '/_authenticated/dashboard'
-    | '/_authenticated/notifications'
-    | '/_authenticated/offcuts'
-    | '/_authenticated/plates'
-    | '/_authenticated/reports'
-    | '/_authenticated/roles'
-    | '/_authenticated/scan'
-    | '/_authenticated/settings'
-    | '/_authenticated/suppliers'
-    | '/_authenticated/work-ticket'
-    | '/work-ticket/work-ticket'
-    | '/_authenticated/inventory/receive'
-    | '/_authenticated/inventory/transfer'
-    | '/_authenticated/jobs/$jobId'
-    | '/_authenticated/jobs/new'
-    | '/_authenticated/inventory/'
-    | '/_authenticated/jobs/'
-  fileRoutesById: FileRoutesById
+    | "__root__"
+    | "/"
+    | "/_authenticated"
+    | "/auth"
+    | "/sitemap.xml"
+    | "/_authenticated/customers"
+    | "/_authenticated/dashboard"
+    | "/_authenticated/notifications"
+    | "/_authenticated/offcuts"
+    | "/_authenticated/plates"
+    | "/_authenticated/reports"
+    | "/_authenticated/roles"
+    | "/_authenticated/scan"
+    | "/_authenticated/settings"
+    | "/_authenticated/suppliers"
+    | "/_authenticated/inventory/receive"
+    | "/_authenticated/inventory/transfer"
+    | "/_authenticated/jobs/$jobId"
+    | "/_authenticated/jobs/new"
+    | "/_authenticated/inventory/"
+    | "/_authenticated/jobs/"
+    | "/_authenticated/work-ticket";
+  fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
-  AuthRoute: typeof AuthRoute
-  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  WorkTicketWorkTicketRoute: typeof WorkTicketWorkTicketRoute
+  IndexRoute: typeof IndexRoute;
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren;
+  AuthRoute: typeof AuthRoute;
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute;
 }
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated': {
-      id: '/_authenticated'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/work-ticket/work-ticket': {
-      id: '/work-ticket/work-ticket'
-      path: '/work-ticket/work-ticket'
-      fullPath: '/work-ticket/work-ticket'
-      preLoaderRoute: typeof WorkTicketWorkTicketRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/work-ticket': {
-      id: '/_authenticated/work-ticket'
-      path: '/work-ticket'
-      fullPath: '/work-ticket'
-      preLoaderRoute: typeof AuthenticatedWorkTicketRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/suppliers': {
-      id: '/_authenticated/suppliers'
-      path: '/suppliers'
-      fullPath: '/suppliers'
-      preLoaderRoute: typeof AuthenticatedSuppliersRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/settings': {
-      id: '/_authenticated/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/scan': {
-      id: '/_authenticated/scan'
-      path: '/scan'
-      fullPath: '/scan'
-      preLoaderRoute: typeof AuthenticatedScanRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/roles': {
-      id: '/_authenticated/roles'
-      path: '/roles'
-      fullPath: '/roles'
-      preLoaderRoute: typeof AuthenticatedRolesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/reports': {
-      id: '/_authenticated/reports'
-      path: '/reports'
-      fullPath: '/reports'
-      preLoaderRoute: typeof AuthenticatedReportsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/plates': {
-      id: '/_authenticated/plates'
-      path: '/plates'
-      fullPath: '/plates'
-      preLoaderRoute: typeof AuthenticatedPlatesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/offcuts': {
-      id: '/_authenticated/offcuts'
-      path: '/offcuts'
-      fullPath: '/offcuts'
-      preLoaderRoute: typeof AuthenticatedOffcutsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/notifications': {
-      id: '/_authenticated/notifications'
-      path: '/notifications'
-      fullPath: '/notifications'
-      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dashboard': {
-      id: '/_authenticated/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/customers': {
-      id: '/_authenticated/customers'
-      path: '/customers'
-      fullPath: '/customers'
-      preLoaderRoute: typeof AuthenticatedCustomersRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/jobs/': {
-      id: '/_authenticated/jobs/'
-      path: '/jobs'
-      fullPath: '/jobs/'
-      preLoaderRoute: typeof AuthenticatedJobsIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/inventory/': {
-      id: '/_authenticated/inventory/'
-      path: '/inventory'
-      fullPath: '/inventory/'
-      preLoaderRoute: typeof AuthenticatedInventoryIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/jobs/new': {
-      id: '/_authenticated/jobs/new'
-      path: '/jobs/new'
-      fullPath: '/jobs/new'
-      preLoaderRoute: typeof AuthenticatedJobsNewRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/jobs/$jobId': {
-      id: '/_authenticated/jobs/$jobId'
-      path: '/jobs/$jobId'
-      fullPath: '/jobs/$jobId'
-      preLoaderRoute: typeof AuthenticatedJobsJobIdRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/inventory/transfer': {
-      id: '/_authenticated/inventory/transfer'
-      path: '/inventory/transfer'
-      fullPath: '/inventory/transfer'
-      preLoaderRoute: typeof AuthenticatedInventoryTransferRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/inventory/receive': {
-      id: '/_authenticated/inventory/receive'
-      path: '/inventory/receive'
-      fullPath: '/inventory/receive'
-      preLoaderRoute: typeof AuthenticatedInventoryReceiveRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
+    "/sitemap.xml": {
+      id: "/sitemap.xml";
+      path: "/sitemap.xml";
+      fullPath: "/sitemap.xml";
+      preLoaderRoute: typeof SitemapDotxmlRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/auth": {
+      id: "/auth";
+      path: "/auth";
+      fullPath: "/auth";
+      preLoaderRoute: typeof AuthRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/_authenticated": {
+      id: "/_authenticated";
+      path: "";
+      fullPath: "/";
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/": {
+      id: "/";
+      path: "/";
+      fullPath: "/";
+      preLoaderRoute: typeof IndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/_authenticated/suppliers": {
+      id: "/_authenticated/suppliers";
+      path: "/suppliers";
+      fullPath: "/suppliers";
+      preLoaderRoute: typeof AuthenticatedSuppliersRouteImport;
+      parentRoute: typeof AuthenticatedRouteRoute;
+    };
+    "/_authenticated/settings": {
+      id: "/_authenticated/settings";
+      path: "/settings";
+      fullPath: "/settings";
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport;
+      parentRoute: typeof AuthenticatedRouteRoute;
+    };
+    "/_authenticated/scan": {
+      id: "/_authenticated/scan";
+      path: "/scan";
+      fullPath: "/scan";
+      preLoaderRoute: typeof AuthenticatedScanRouteImport;
+      parentRoute: typeof AuthenticatedRouteRoute;
+    };
+    "/_authenticated/roles": {
+      id: "/_authenticated/roles";
+      path: "/roles";
+      fullPath: "/roles";
+      preLoaderRoute: typeof AuthenticatedRolesRouteImport;
+      parentRoute: typeof AuthenticatedRouteRoute;
+    };
+    "/_authenticated/reports": {
+      id: "/_authenticated/reports";
+      path: "/reports";
+      fullPath: "/reports";
+      preLoaderRoute: typeof AuthenticatedReportsRouteImport;
+      parentRoute: typeof AuthenticatedRouteRoute;
+    };
+    "/_authenticated/plates": {
+      id: "/_authenticated/plates";
+      path: "/plates";
+      fullPath: "/plates";
+      preLoaderRoute: typeof AuthenticatedPlatesRouteImport;
+      parentRoute: typeof AuthenticatedRouteRoute;
+    };
+    "/_authenticated/offcuts": {
+      id: "/_authenticated/offcuts";
+      path: "/offcuts";
+      fullPath: "/offcuts";
+      preLoaderRoute: typeof AuthenticatedOffcutsRouteImport;
+      parentRoute: typeof AuthenticatedRouteRoute;
+    };
+    "/_authenticated/notifications": {
+      id: "/_authenticated/notifications";
+      path: "/notifications";
+      fullPath: "/notifications";
+      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport;
+      parentRoute: typeof AuthenticatedRouteRoute;
+    };
+    "/_authenticated/dashboard": {
+      id: "/_authenticated/dashboard";
+      path: "/dashboard";
+      fullPath: "/dashboard";
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport;
+      parentRoute: typeof AuthenticatedRouteRoute;
+    };
+    "/_authenticated/customers": {
+      id: "/_authenticated/customers";
+      path: "/customers";
+      fullPath: "/customers";
+      preLoaderRoute: typeof AuthenticatedCustomersRouteImport;
+      parentRoute: typeof AuthenticatedRouteRoute;
+    };
+    "/_authenticated/jobs/": {
+      id: "/_authenticated/jobs/";
+      path: "/jobs";
+      fullPath: "/jobs/";
+      preLoaderRoute: typeof AuthenticatedJobsIndexRouteImport;
+      parentRoute: typeof AuthenticatedRouteRoute;
+    };
+    "/_authenticated/inventory/": {
+      id: "/_authenticated/inventory/";
+      path: "/inventory";
+      fullPath: "/inventory/";
+      preLoaderRoute: typeof AuthenticatedInventoryIndexRouteImport;
+      parentRoute: typeof AuthenticatedRouteRoute;
+    };
+    "/_authenticated/jobs/new": {
+      id: "/_authenticated/jobs/new";
+      path: "/jobs/new";
+      fullPath: "/jobs/new";
+      preLoaderRoute: typeof AuthenticatedJobsNewRouteImport;
+      parentRoute: typeof AuthenticatedRouteRoute;
+    };
+    "/_authenticated/work-ticket": {
+      id: "/_authenticated/work-ticket";
+      path: "/work-ticket";
+      fullPath: "/work-ticket";
+      preLoaderRoute: typeof AuthenticatedWorkTicketRouteImport;
+      parentRoute: typeof AuthenticatedRouteRoute;
+    };
+    "/_authenticated/jobs/$jobId": {
+      id: "/_authenticated/jobs/$jobId";
+      path: "/jobs/$jobId";
+      fullPath: "/jobs/$jobId";
+      preLoaderRoute: typeof AuthenticatedJobsJobIdRouteImport;
+      parentRoute: typeof AuthenticatedRouteRoute;
+    };
+    "/_authenticated/inventory/transfer": {
+      id: "/_authenticated/inventory/transfer";
+      path: "/inventory/transfer";
+      fullPath: "/inventory/transfer";
+      preLoaderRoute: typeof AuthenticatedInventoryTransferRouteImport;
+      parentRoute: typeof AuthenticatedRouteRoute;
+    };
+    "/_authenticated/inventory/receive": {
+      id: "/_authenticated/inventory/receive";
+      path: "/inventory/receive";
+      fullPath: "/inventory/receive";
+      preLoaderRoute: typeof AuthenticatedInventoryReceiveRouteImport;
+      parentRoute: typeof AuthenticatedRouteRoute;
+    };
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedCustomersRoute: typeof AuthenticatedCustomersRoute
-  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
-  AuthenticatedOffcutsRoute: typeof AuthenticatedOffcutsRoute
-  AuthenticatedPlatesRoute: typeof AuthenticatedPlatesRoute
-  AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
-  AuthenticatedRolesRoute: typeof AuthenticatedRolesRoute
-  AuthenticatedScanRoute: typeof AuthenticatedScanRoute
-  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
-  AuthenticatedSuppliersRoute: typeof AuthenticatedSuppliersRoute
-  AuthenticatedWorkTicketRoute: typeof AuthenticatedWorkTicketRoute
-  AuthenticatedInventoryReceiveRoute: typeof AuthenticatedInventoryReceiveRoute
-  AuthenticatedInventoryTransferRoute: typeof AuthenticatedInventoryTransferRoute
-  AuthenticatedJobsJobIdRoute: typeof AuthenticatedJobsJobIdRoute
-  AuthenticatedJobsNewRoute: typeof AuthenticatedJobsNewRoute
-  AuthenticatedInventoryIndexRoute: typeof AuthenticatedInventoryIndexRoute
-  AuthenticatedJobsIndexRoute: typeof AuthenticatedJobsIndexRoute
+  AuthenticatedCustomersRoute: typeof AuthenticatedCustomersRoute;
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute;
+  AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute;
+  AuthenticatedOffcutsRoute: typeof AuthenticatedOffcutsRoute;
+  AuthenticatedPlatesRoute: typeof AuthenticatedPlatesRoute;
+  AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute;
+  AuthenticatedRolesRoute: typeof AuthenticatedRolesRoute;
+  AuthenticatedScanRoute: typeof AuthenticatedScanRoute;
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute;
+  AuthenticatedSuppliersRoute: typeof AuthenticatedSuppliersRoute;
+  AuthenticatedInventoryReceiveRoute: typeof AuthenticatedInventoryReceiveRoute;
+  AuthenticatedInventoryTransferRoute: typeof AuthenticatedInventoryTransferRoute;
+  AuthenticatedJobsJobIdRoute: typeof AuthenticatedJobsJobIdRoute;
+  AuthenticatedJobsNewRoute: typeof AuthenticatedJobsNewRoute;
+  AuthenticatedInventoryIndexRoute: typeof AuthenticatedInventoryIndexRoute;
+  AuthenticatedJobsIndexRoute: typeof AuthenticatedJobsIndexRoute;
+  AuthenticatedWorkTicketRoute: typeof AuthenticatedWorkTicketRoute;
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -488,35 +464,21 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedScanRoute: AuthenticatedScanRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedSuppliersRoute: AuthenticatedSuppliersRoute,
-  AuthenticatedWorkTicketRoute: AuthenticatedWorkTicketRoute,
   AuthenticatedInventoryReceiveRoute: AuthenticatedInventoryReceiveRoute,
   AuthenticatedInventoryTransferRoute: AuthenticatedInventoryTransferRoute,
   AuthenticatedJobsJobIdRoute: AuthenticatedJobsJobIdRoute,
   AuthenticatedJobsNewRoute: AuthenticatedJobsNewRoute,
   AuthenticatedInventoryIndexRoute: AuthenticatedInventoryIndexRoute,
   AuthenticatedJobsIndexRoute: AuthenticatedJobsIndexRoute,
-}
+  AuthenticatedWorkTicketRoute: AuthenticatedWorkTicketRoute,
+};
 
-const AuthenticatedRouteRouteWithChildren =
-  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+const AuthenticatedRouteRouteWithChildren = AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren);
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
-  WorkTicketWorkTicketRoute: WorkTicketWorkTicketRoute,
-}
-export const routeTree = rootRouteImport
-  ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
+};
+export const routeTree = rootRouteImport._addFileChildren(rootRouteChildren)._addFileTypes<FileRouteTypes>();
