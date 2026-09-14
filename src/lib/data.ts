@@ -10,7 +10,7 @@ export const startOfToday = () => {
 export async function fetchDashboard() {
   const today = startOfToday();
 
-  const [plates, offcuts, jobs, batches, txToday] = await Promise.all([
+  const [plates, offcuts, jobs, batches, txToday, workTickets, workTicketItems] = await Promise.all([
     supabase.from("plates").select("id,status,remaining_area,area,created_at,batch_id"),
     supabase.from("offcuts").select("id,status,area,created_at"),
     supabase
@@ -21,10 +21,13 @@ export async function fetchDashboard() {
       .select(
         "id,batch_number,total_plates,available_plates,used_plates,reserved_plates,date_received,manufacturer_id,plate_type,cost_per_plate,manufacturers(name)",
       ),
+    supabase.from("inventory_transactions").select("id,transaction_type,quantity,created_at").gte("created_at", today),
     supabase
-      .from("inventory_transactions")
-      .select("id,transaction_type,quantity,created_at")
-      .gte("created_at", today),
+      .from("work_tickets")
+      .select("id,work_ticket_number,status,created_at")
+      .order("created_at", { ascending: false })
+      .limit(20),
+    supabase.from("work_ticket_items").select("id,work_ticket_id,item_name,quantity,completed_quantity"),
   ]);
 
   return {
@@ -33,6 +36,8 @@ export async function fetchDashboard() {
     jobs: jobs.data ?? [],
     batches: batches.data ?? [],
     transactionsToday: txToday.data ?? [],
+    workTickets: workTickets.data ?? [],
+    workTicketItems: workTicketItems.data ?? [],
   };
 }
 
