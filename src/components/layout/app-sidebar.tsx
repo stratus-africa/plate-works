@@ -14,7 +14,6 @@ import {
   ArrowRightLeft,
   ShieldCheck,
   Truck,
-  Settings2,
 } from "lucide-react";
 import {
   Sidebar,
@@ -48,8 +47,7 @@ const groups = [
   {
     label: "Production",
     items: [
-      { title: "Jobs", url: "/jobs", icon: ClipboardList },
-      { title: "Work Ticket Optimiser", url: "/work-ticket", icon: Settings2 },
+      { title: "Work Ticket Optimiser", url: "/work-ticket", icon: ClipboardList },
       { title: "Customers", url: "/customers", icon: Users },
       { title: "Suppliers", url: "/suppliers", icon: Truck },
     ],
