@@ -68,7 +68,8 @@ function WorkTicket() {
 
   const jobs = useMemo<WorkTicketJob[]>(() => records.map((row, i) => ({
     id: `${row[mapping.jobNumber] ?? "job"}-${i}`,
-    jobNumber: row[mapping.jobNumber] || `JOB-${i + 1}`,
+    workTicketId: `${row[mapping.jobNumber] ?? "job"}-${i}`,
+    workTicketNumber: row[mapping.jobNumber] || `JOB-${i + 1}`,
     itemName: row[mapping.itemName] || "Unnamed item",
     description: row[mapping.description] || "",
     length: numberValue(row[mapping.length]),
