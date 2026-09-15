@@ -15,6 +15,7 @@ import {
   ClipboardList,
 } from "lucide-react";
 import {
+  Bar,
   BarChart,
   CartesianGrid,
   Cell,
