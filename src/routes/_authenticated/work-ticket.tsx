@@ -303,56 +303,68 @@ function WorkTicketPlanning() {
     mutationFn: async (skipDuplicates: boolean) => {
       validateMapping();
       const seen = skipDuplicates ? await loadExistingKeys() : new Set<string>();
-      let skipped = 0;
+      const report: ImportReport = { created: [], skipped: [], failed: [] };
+      const describe = (row: Record<string, string>, rowNumber: number, ticket: string) => ({
+        csv_row: rowNumber,
+        work_ticket: ticket,
+        item: row[mapping.itemName] ?? "",
+        length: row[mapping.length] ?? "",
+        width: row[mapping.width] ?? "",
+        quantity: row[mapping.quantity] ?? "",
+      });
       const groups = new Map<string, Array<{ row: Record<string, string>; rowNumber: number }>>();
       records.forEach((row, index) => {
+        const ticketNumber = ticketOf(row, index);
+        const rowNumber = index + 2;
+        if (!(num(row[mapping.length]) > 0) || !(num(row[mapping.width]) > 0)) {
+          report.failed.push({ ...describe(row, rowNumber, ticketNumber), reason: "Missing or invalid length/width" });
+          return;
+        }
         if (skipDuplicates) {
           const k = rowKey(row, index);
           if (seen.has(k)) {
-            skipped++;
+            report.skipped.push({ ...describe(row, rowNumber, ticketNumber), reason: "Duplicate line item" });
             return;
           }
           seen.add(k);
         }
-        const ticketNumber = ticketOf(row, index);
         const list = groups.get(ticketNumber) ?? [];
-        list.push({ row, rowNumber: index + 2 });
+        list.push({ row, rowNumber });
         groups.set(ticketNumber, list);
       });
 
-      let imported = 0;
       for (const [ticketNumber, ticketRows] of groups) {
-        const existing = await supabase
-          .from("work_tickets")
-          .select("id")
-          .eq("work_ticket_number", ticketNumber)
-          .maybeSingle();
-        if (existing.error) throw existing.error;
-
-        let ticketId = existing.data?.id;
-        if (!ticketId) {
-          const inserted = await supabase
+        try {
+          const existing = await supabase
             .from("work_tickets")
-            .insert({ work_ticket_number: ticketNumber, source_document: "Sales Order CSV", field_mapping: mapping })
             .select("id")
-            .single();
-          if (inserted.error) throw inserted.error;
-          ticketId = inserted.data.id;
-        } else {
-          const updated = await supabase.from("work_tickets").update({ field_mapping: mapping }).eq("id", ticketId);
-          if (updated.error) throw updated.error;
-        }
+            .eq("work_ticket_number", ticketNumber)
+            .maybeSingle();
+          if (existing.error) throw existing.error;
 
-        const existingItems = await supabase
-          .from("work_ticket_items")
-          .select("source_row_number")
-          .eq("work_ticket_id", ticketId);
-        if (existingItems.error) throw existingItems.error;
-        let nextRow = Math.max(0, ...(existingItems.data ?? []).map((r) => r.source_row_number)) + 1;
-        const used = new Set((existingItems.data ?? []).map((r) => r.source_row_number));
+          let ticketId = existing.data?.id;
+          if (!ticketId) {
+            const inserted = await supabase
+              .from("work_tickets")
+              .insert({ work_ticket_number: ticketNumber, source_document: "Sales Order CSV", field_mapping: mapping })
+              .select("id")
+              .single();
+            if (inserted.error) throw inserted.error;
+            ticketId = inserted.data.id;
+          } else {
+            const updated = await supabase.from("work_tickets").update({ field_mapping: mapping }).eq("id", ticketId);
+            if (updated.error) throw updated.error;
+          }
 
-        const inserts = ticketRows
-          .map(({ row, rowNumber }) => ({
+          const existingItems = await supabase
+            .from("work_ticket_items")
+            .select("source_row_number")
+            .eq("work_ticket_id", ticketId);
+          if (existingItems.error) throw existingItems.error;
+          let nextRow = Math.max(0, ...(existingItems.data ?? []).map((r) => r.source_row_number)) + 1;
+          const used = new Set((existingItems.data ?? []).map((r) => r.source_row_number));
+
+          const inserts = ticketRows.map(({ row, rowNumber }) => ({
             work_ticket_id: ticketId!,
             source_row_number: used.has(rowNumber) ? nextRow++ : rowNumber,
             item_name: row[mapping.itemName] || "Unnamed item",
@@ -361,22 +373,24 @@ function WorkTicketPlanning() {
             width: num(row[mapping.width]),
             quantity: Math.max(1, Math.floor(num(row[mapping.quantity]) || 1)),
             source_data: row,
-          }))
-          .filter((item) => item.length > 0 && item.width > 0);
-
-        if (inserts.length) {
+          }));
           const insertedItems = await supabase.from("work_ticket_items").insert(inserts);
           if (insertedItems.error) throw insertedItems.error;
-          imported += inserts.length;
+          ticketRows.forEach(({ row, rowNumber }) =>
+            report.created.push({ ...describe(row, rowNumber, ticketNumber), reason: "" }),
+          );
+          await supabase.rpc("sync_work_ticket_status", { p_work_ticket_id: ticketId });
+        } catch (err) {
+          const reason = (err as Error).message || "Save failed";
+          ticketRows.forEach(({ row, rowNumber }) =>
+            report.failed.push({ ...describe(row, rowNumber, ticketNumber), reason }),
+          );
         }
-        await supabase.rpc("sync_work_ticket_status", { p_work_ticket_id: ticketId });
       }
-      return { imported, skipped };
+      return report;
     },
-    onSuccess: ({ imported, skipped }) => {
-      toast.success(
-        `${imported} jobs imported${skipped ? `, ${skipped} duplicate(s) skipped` : ""}.`,
-      );
+    onSuccess: (report) => {
+      setImportReport(report);
       setDupCount(null);
       setMappingOpen(false);
       queryClient.invalidateQueries({ queryKey: ["work-ticket-items"] });
@@ -385,16 +399,18 @@ function WorkTicketPlanning() {
   });
 
   const deleteTicket = useMutation({
-    mutationFn: async (id: string) => {
-      const items = await supabase.from("work_ticket_items").delete().eq("work_ticket_id", id);
+    mutationFn: async (ids: string[]) => {
+      const items = await supabase.from("work_ticket_items").delete().in("work_ticket_id", ids);
       if (items.error) throw items.error;
-      const t = await supabase.from("work_tickets").delete().eq("id", id);
+      const t = await supabase.from("work_tickets").delete().in("id", ids);
       if (t.error) throw t.error;
+      return ids.length;
     },
-    onSuccess: () => {
-      toast.success("Work ticket deleted");
+    onSuccess: (n) => {
+      toast.success(`${n} work ticket(s) deleted`);
       setTicketToDelete(null);
       setSelected({});
+      setSelectedTickets(new Set());
       queryClient.invalidateQueries({ queryKey: ["work-ticket-items"] });
     },
     onError: (error) => toast.error((error as Error).message),
@@ -715,7 +731,20 @@ function WorkTicketPlanning() {
                   return (
                     <div key={ticketNumber}>
                       <div className="flex items-center justify-between gap-3 bg-muted/20 px-4 py-3">
-                        <div className="min-w-0">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <Checkbox
+                            aria-label={`Select work ticket ${ticketNumber}`}
+                            checked={selectedTickets.has(items[0].work_ticket_id)}
+                            onCheckedChange={(v) =>
+                              setSelectedTickets((prev) => {
+                                const next = new Set(prev);
+                                if (v === true) next.add(items[0].work_ticket_id);
+                                else next.delete(items[0].work_ticket_id);
+                                return next;
+                              })
+                            }
+                          />
+                          <div className="min-w-0">
                           <div className="flex items-center gap-2">
                             <span className="truncate font-semibold">{ticketNumber}</span>
                             <Badge variant={ticketStatus === "Partial" ? "secondary" : "outline"}>{ticketStatus}</Badge>
@@ -724,13 +753,14 @@ function WorkTicketPlanning() {
                           <div className="text-xs text-muted-foreground">
                             {items.length} line item(s) · Jobs can be completed across multiple runs
                           </div>
+                          </div>
                         </div>
                         <div className="flex items-center gap-1">
                           <Button
                             variant="ghost"
                             size="sm"
                             aria-label={`Delete work ticket ${ticketNumber}`}
-                            onClick={() => setTicketToDelete({ id: items[0].work_ticket_id, number: ticketNumber })}
+                            onClick={() => setTicketToDelete({ ids: [items[0].work_ticket_id], label: ticketNumber })}
                           >
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
