@@ -10,6 +10,7 @@ import {
   Save,
   Settings2,
   Sparkles,
+  Trash2,
   Upload,
   X,
 } from "lucide-react";
@@ -25,6 +26,19 @@ import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import { optimiseWorkTicket, type WorkTicketJob } from "@/lib/work-ticket-optimizer";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
+const dupKey = (ticket: string, name: string, l: number, w: number) =>
+  `${ticket.trim().toLowerCase()}|${name.trim().toLowerCase()}|${l}|${w}`;
 
 export const Route = createFileRoute("/_authenticated/work-ticket")({
   head: () => ({ meta: [{ title: "Jobs & Work Ticket Optimiser — PlateWorks" }] }),
@@ -132,6 +146,8 @@ function WorkTicketPlanning() {
   const [saved, setSaved] = useState(false);
   const [ticketFilter, setTicketFilter] = useState("");
   const [showOnlyFit, setShowOnlyFit] = useState(true);
+  const [dupCount, setDupCount] = useState<number | null>(null);
+  const [ticketToDelete, setTicketToDelete] = useState<{ id: string; number: string } | null>(null);
 
   const { data: openItems = [], isLoading } = useQuery({
     queryKey: ["work-ticket-items", "open-and-partial"],
@@ -236,15 +252,69 @@ function WorkTicketPlanning() {
     onError: (error) => toast.error((error as Error).message),
   });
 
-  const importMapped = useMutation({
+  const validateMapping = () => {
+    if (!records.length) throw new Error("Upload a Sales Order CSV first.");
+    if (!mapping.workTicketNumber || !mapping.itemName || !mapping.length || !mapping.width || !mapping.quantity) {
+      throw new Error("Map Work Ticket, Item Name, Length, Width and Quantity before importing.");
+    }
+  };
+
+  const ticketOf = (row: Record<string, string>, index: number) =>
+    row[mapping.workTicketNumber] || `Imported CSV — ${index + 1}`;
+
+  /** Keys of line items already stored for the ticket numbers present in the CSV. */
+  const loadExistingKeys = async () => {
+    const numbers = Array.from(new Set(records.map(ticketOf)));
+    const { data, error } = await supabase
+      .from("work_ticket_items")
+      .select("item_name,length,width,work_tickets!inner(work_ticket_number)")
+      .in("work_tickets.work_ticket_number", numbers);
+    if (error) throw error;
+    return new Set(
+      ((data ?? []) as unknown as Array<{ item_name: string; length: number; width: number; work_tickets: { work_ticket_number: string } }>).map(
+        (r) => dupKey(r.work_tickets.work_ticket_number, r.item_name, num(r.length), num(r.width)),
+      ),
+    );
+  };
+
+  const rowKey = (row: Record<string, string>, index: number) =>
+    dupKey(ticketOf(row, index), row[mapping.itemName] || "Unnamed item", num(row[mapping.length]), num(row[mapping.width]));
+
+  const checkDuplicates = useMutation({
     mutationFn: async () => {
-      if (!records.length) throw new Error("Upload a Sales Order CSV first.");
-      if (!mapping.workTicketNumber || !mapping.itemName || !mapping.length || !mapping.width || !mapping.quantity) {
-        throw new Error("Map Work Ticket, Item Name, Length, Width and Quantity before importing.");
-      }
+      validateMapping();
+      const seen = await loadExistingKeys();
+      let dups = 0;
+      records.forEach((row, i) => {
+        const k = rowKey(row, i);
+        if (seen.has(k)) dups++;
+        else seen.add(k);
+      });
+      return dups;
+    },
+    onSuccess: (dups) => {
+      if (dups > 0) setDupCount(dups);
+      else importMapped.mutate(false);
+    },
+    onError: (error) => toast.error((error as Error).message),
+  });
+
+  const importMapped = useMutation({
+    mutationFn: async (skipDuplicates: boolean) => {
+      validateMapping();
+      const seen = skipDuplicates ? await loadExistingKeys() : new Set<string>();
+      let skipped = 0;
       const groups = new Map<string, Array<{ row: Record<string, string>; rowNumber: number }>>();
       records.forEach((row, index) => {
-        const ticketNumber = row[mapping.workTicketNumber] || `Imported CSV — ${index + 1}`;
+        if (skipDuplicates) {
+          const k = rowKey(row, index);
+          if (seen.has(k)) {
+            skipped++;
+            return;
+          }
+          seen.add(k);
+        }
+        const ticketNumber = ticketOf(row, index);
         const list = groups.get(ticketNumber) ?? [];
         list.push({ row, rowNumber: index + 2 });
         groups.set(ticketNumber, list);
@@ -278,12 +348,13 @@ function WorkTicketPlanning() {
           .select("source_row_number")
           .eq("work_ticket_id", ticketId);
         if (existingItems.error) throw existingItems.error;
-        const existingRows = new Set((existingItems.data ?? []).map((row) => row.source_row_number));
+        let nextRow = Math.max(0, ...(existingItems.data ?? []).map((r) => r.source_row_number)) + 1;
+        const used = new Set((existingItems.data ?? []).map((r) => r.source_row_number));
 
         const inserts = ticketRows
           .map(({ row, rowNumber }) => ({
             work_ticket_id: ticketId!,
-            source_row_number: rowNumber,
+            source_row_number: used.has(rowNumber) ? nextRow++ : rowNumber,
             item_name: row[mapping.itemName] || "Unnamed item",
             description: mapping.description ? row[mapping.description] || null : null,
             length: num(row[mapping.length]),
@@ -291,7 +362,7 @@ function WorkTicketPlanning() {
             quantity: Math.max(1, Math.floor(num(row[mapping.quantity]) || 1)),
             source_data: row,
           }))
-          .filter((item) => !existingRows.has(item.source_row_number) && item.length > 0 && item.width > 0);
+          .filter((item) => item.length > 0 && item.width > 0);
 
         if (inserts.length) {
           const insertedItems = await supabase.from("work_ticket_items").insert(inserts);
@@ -300,11 +371,30 @@ function WorkTicketPlanning() {
         }
         await supabase.rpc("sync_work_ticket_status", { p_work_ticket_id: ticketId });
       }
-      return imported;
+      return { imported, skipped };
     },
-    onSuccess: (count) => {
-      toast.success(`${count} jobs imported and added to the open Work Ticket pool.`);
+    onSuccess: ({ imported, skipped }) => {
+      toast.success(
+        `${imported} jobs imported${skipped ? `, ${skipped} duplicate(s) skipped` : ""}.`,
+      );
+      setDupCount(null);
       setMappingOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["work-ticket-items"] });
+    },
+    onError: (error) => toast.error((error as Error).message),
+  });
+
+  const deleteTicket = useMutation({
+    mutationFn: async (id: string) => {
+      const items = await supabase.from("work_ticket_items").delete().eq("work_ticket_id", id);
+      if (items.error) throw items.error;
+      const t = await supabase.from("work_tickets").delete().eq("id", id);
+      if (t.error) throw t.error;
+    },
+    onSuccess: () => {
+      toast.success("Work ticket deleted");
+      setTicketToDelete(null);
+      setSelected({});
       queryClient.invalidateQueries({ queryKey: ["work-ticket-items"] });
     },
     onError: (error) => toast.error((error as Error).message),
@@ -544,15 +634,65 @@ function WorkTicketPlanning() {
                   </Button>
                   <Button
                     size="sm"
-                    onClick={() => importMapped.mutate()}
-                    disabled={!records.length || importMapped.isPending}
+                    onClick={() => checkDuplicates.mutate()}
+                    disabled={!records.length || importMapped.isPending || checkDuplicates.isPending}
                   >
-                    {importMapped.isPending ? "Importing…" : "Import Work Tickets"}
+                    {importMapped.isPending || checkDuplicates.isPending ? "Importing…" : "Import Work Tickets"}
                   </Button>
                 </div>
               </div>
             </div>
           )}
+
+          <AlertDialog open={dupCount !== null} onOpenChange={(o) => !o && setDupCount(null)}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{dupCount} duplicate line item(s) found</AlertDialogTitle>
+                <AlertDialogDescription>
+                  These rows match jobs already in the system (same work ticket, item and size) or repeat within
+                  the file. Skip duplicates to ignore them and import only new rows.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <Button variant="outline" onClick={() => importMapped.mutate(false)} disabled={importMapped.isPending}>
+                  Import all
+                </Button>
+                <AlertDialogAction
+                  onClick={(e) => {
+                    e.preventDefault();
+                    importMapped.mutate(true);
+                  }}
+                  disabled={importMapped.isPending}
+                >
+                  Skip duplicates
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          <AlertDialog open={!!ticketToDelete} onOpenChange={(o) => !o && setTicketToDelete(null)}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete work ticket {ticketToDelete?.number}?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This permanently removes the work ticket and all of its line items.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (ticketToDelete) deleteTicket.mutate(ticketToDelete.id);
+                  }}
+                  disabled={deleteTicket.isPending}
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
 
           <CardContent className="p-0">
             {isLoading ? (
@@ -585,7 +725,17 @@ function WorkTicketPlanning() {
                             {items.length} line item(s) · Jobs can be completed across multiple runs
                           </div>
                         </div>
-                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            aria-label={`Delete work ticket ${ticketNumber}`}
+                            onClick={() => setTicketToDelete({ id: items[0].work_ticket_id, number: ticketNumber })}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                        </div>
                       </div>
                       <div className="overflow-x-auto">
                         <Table>
