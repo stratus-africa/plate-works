@@ -118,10 +118,11 @@ function Jobs() {
       const ids = selection.selectedIds;
       // Remove dependent allocations first so the delete is not blocked.
       await supabase.from("plate_allocations").delete().in("job_id", ids);
-      const { error } = await supabase.from("jobs").delete().in("id", ids);
+      const { data, error } = await supabase.from("jobs").delete().in("id", ids).select("id");
       if (error) throw error;
+      if (!data?.length) throw new Error("You don't have permission to delete these jobs.");
       await audit("bulk_delete_jobs", "jobs", null, { ids }, null);
-      return ids.length;
+      return data.length;
     },
     onSuccess: (n) => {
       toast.success(`${n} job(s) deleted`);
@@ -285,6 +286,7 @@ function Jobs() {
                     <TableHead className="text-right">Utilisation</TableHead>
                     <TableHead>Due</TableHead>
                     <TableHead>Status</TableHead>
+                    {canManage && <TableHead className="w-12" />}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -318,6 +320,22 @@ function Jobs() {
                       <TableCell>
                         <StatusBadge status={j.status} />
                       </TableCell>
+                      {canManage && (
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            aria-label={`Delete ${j.job_number}`}
+                            onClick={() => {
+                              selection.clear();
+                              selection.toggle(j.id, true);
+                              setConfirmDelete(true);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))}
                 </TableBody>

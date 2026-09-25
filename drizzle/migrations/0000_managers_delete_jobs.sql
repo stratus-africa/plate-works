@@ -1,0 +1,2 @@
+CREATE POLICY "managers delete jobs" ON public.jobs FOR DELETE TO authenticated USING (public.has_role(auth.uid(), 'production_manager'));
+CREATE POLICY "managers delete allocations" ON public.plate_allocations FOR DELETE TO authenticated USING (public.has_role(auth.uid(), 'production_manager'));
